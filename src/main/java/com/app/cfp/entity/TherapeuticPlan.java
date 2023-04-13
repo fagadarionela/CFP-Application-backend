@@ -15,14 +15,10 @@ import java.util.UUID;
 @Entity
 public class TherapeuticPlan {
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    private UUID id;
-
     private String name;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinColumn(name = "differentialDiagnosisElements", nullable = false)
-    private List<TherapeuticPlanElement> differentialDiagnosisElements;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinColumn(name = "therapeuticPlanElements", nullable = false)
+    private List<TherapeuticPlanElement> therapeuticPlanElements;
 
 }

@@ -1,5 +1,6 @@
 package com.app.cfp.entity;
 
+import com.app.cfp.dto.DifferentialDiagnosisDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
