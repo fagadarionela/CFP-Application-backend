@@ -2,23 +2,26 @@ package com.app.cfp.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 public class TherapeuticPlan {
     @Id
     private String name;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "therapeuticPlanElements", nullable = false)
-    private List<TherapeuticPlanElement> therapeuticPlanElements;
+//    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+//    @JoinColumn(name = "therapeuticPlanElements", nullable = false)
+//    private List<Method> therapeuticPlanElements;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE, mappedBy = "therapeuticPlan")
+    List<TherapeuticPlanMethod> therapeuticPlanMethod;
 
 }

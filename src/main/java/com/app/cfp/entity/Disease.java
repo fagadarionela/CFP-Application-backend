@@ -23,8 +23,8 @@ public class Disease {
     private String name;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "clinicalSigns", nullable = false)
-    private Set<ClinicalSign> clinicalSigns;
+    @JoinColumn(name = "generalClinicalSigns", nullable = false)
+    private Set<GeneralClinicalSign> generalClinicalSigns;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "differentialDiagnosis", nullable = false)

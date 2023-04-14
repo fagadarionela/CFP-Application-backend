@@ -13,7 +13,7 @@ public class DiseaseDTO {
     private String name;
 
 
-    private List<ClinicalSignsDTO> clinicalSigns;
+    private List<String> generalClinicalSigns;
 
 
     private List<DifferentialDiagnosisDTO> differentialDiagnosis;

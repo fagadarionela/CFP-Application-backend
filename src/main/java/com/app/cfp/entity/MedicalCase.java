@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -37,9 +38,11 @@ public class MedicalCase {
 
     private String residentDiagnosis;
 
-    private String differentialDiagnosis;
+    @OneToMany(mappedBy = "medicalCase")
+    List<DifferentialDiagnosisGrade> differentialDiagnosisGrades;
 
-    private String therapeuticPlan;
+    @OneToMany(mappedBy = "medicalCase")
+    List<TherapeuticPlanGrade> therapeuticPlanGrades;
 
     private boolean completed = false;
 

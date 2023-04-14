@@ -16,26 +16,42 @@ public class DiseaseService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiseaseService.class);
     private final DiseaseRepository diseaseRepository;
 
-    private final ClinicalSignRepository clinicalSignRepository;
+    private final GeneralClinicalSignRepository generalClinicalSignRepository;
     private final DifferentialDiagnosisRepository differentialDiagnosisRepository;
 
-    private final DifferentialDiagnosisElementRepository differentialDiagnosisElementRepository;
+    private final SignRepository signRepository;
+
+    private final DifferentialDiagnosisSignRepository differentialDiagnosisSignRepository;
 
     private final TherapeuticPlanRepository therapeuticPlanRepository;
 
-    private final TherapeuticPlanElementRepository therapeuticPlanElementRepository;
+    private final MethodRepository methodRepository;
+
+    private final TherapeuticPlanMethodRepository therapeuticPlanMethodRepository;
 
     public Disease addDiagnosis(Disease disease) {
-        clinicalSignRepository.saveAll(disease.getClinicalSigns());
+        generalClinicalSignRepository.saveAll(disease.getGeneralClinicalSigns());
         if (disease.getDifferentialDiagnosis() != null && !disease.getDifferentialDiagnosis().isEmpty()) {
-            disease.getDifferentialDiagnosis().forEach(
-                    differentialDiagnosis -> differentialDiagnosisElementRepository.saveAll(differentialDiagnosis.getDifferentialDiagnosisElements()));
+            disease.getDifferentialDiagnosis().forEach(differentialDiagnosis ->
+                    differentialDiagnosis.getDifferentialDiagnosisSign().forEach(
+                            differentialDiagnosisDifferentialDiagnosisElement -> signRepository.save(differentialDiagnosisDifferentialDiagnosisElement.getSign())));
             differentialDiagnosisRepository.saveAll(disease.getDifferentialDiagnosis());
+            disease.getDifferentialDiagnosis().forEach(
+                    differentialDiagnosis -> differentialDiagnosisSignRepository.saveAll(differentialDiagnosis.getDifferentialDiagnosisSign())
+            );
+
         }
         if (disease.getTherapeuticPlans() != null && !disease.getTherapeuticPlans().isEmpty()) {
-            disease.getTherapeuticPlans().forEach(
-                    therapeuticPlan -> therapeuticPlanElementRepository.saveAll(therapeuticPlan.getTherapeuticPlanElements()));
+//            disease.getTherapeuticPlans().forEach(
+//                    therapeuticPlan -> therapeuticPlanElementRepository.saveAll(therapeuticPlan.getTherapeuticPlanElements()));
+            disease.getTherapeuticPlans().forEach(therapeuticPlan ->
+                    therapeuticPlan.getTherapeuticPlanMethod().forEach(
+                            therapeuticPlanTherapeuticPlanElement -> methodRepository.save(therapeuticPlanTherapeuticPlanElement.getMethod())));
             therapeuticPlanRepository.saveAll(disease.getTherapeuticPlans());
+            disease.getTherapeuticPlans().forEach(
+                    therapeuticPlan -> therapeuticPlanMethodRepository.saveAll(therapeuticPlan.getTherapeuticPlanMethod())
+            );
+
         }
 
         return diseaseRepository.save(disease);
