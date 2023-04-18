@@ -17,14 +17,6 @@ public class DifferentialDiagnosis {
     @Id
     private String name;
 
-//    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-//    @JoinColumn(name = "differentialDiagnosisElements", nullable = false)
-//    private List<Sign> differentialDiagnosisElements;
-
-//    @Column(name="differentialDiagnosisElements")
-//    @ElementCollection(targetClass=String.class)
-//    private List<String> differentialDiagnosisElements;
-
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE, mappedBy = "differentialDiagnosis")
-    List<DifferentialDiagnosisSign> differentialDiagnosisSign;
+    private List<DifferentialDiagnosisSign> differentialDiagnosisSign;
 }

@@ -18,5 +18,5 @@ public class Method {
     private String name;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE, mappedBy = "method")
-    List<TherapeuticPlanMethod> therapeuticPlanMethod;
+    private List<TherapeuticPlanMethod> therapeuticPlanMethod;
 }

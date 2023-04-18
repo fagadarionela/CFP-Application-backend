@@ -1,9 +1,11 @@
 package com.app.cfp.service;
 
 import com.app.cfp.controller.handlers.exceptions.model.ResourceNotFoundException;
+import com.app.cfp.entity.Account;
 import com.app.cfp.entity.MedicalCase;
 import com.app.cfp.entity.Resident;
-import com.app.cfp.repository.MedicalCaseRepository;
+import com.app.cfp.repository.*;
+import com.app.cfp.utils.AuthorityType;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,24 +23,30 @@ public class MedicalCaseService {
     private final MedicalCaseRepository medicalCaseRepository;
     private final ResidentService residentService;
 
-    public Page<MedicalCase>  getAllIncompleteCasesForResident(String username, Pageable pageable, String encodedInfo) {
-        return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedFalseAndEncodedInfoContains(username, pageable, encodedInfo);
+    private final ClinicalSignGradeRepository clinicalSignGradeRepository;
+
+    private final DifferentialDiagnosisSignRepository differentialDiagnosisSignRepository;
+
+    private final DifferentialDiagnosisGradeRepository differentialDiagnosisGradeRepository;
+
+    private final TherapeuticPlanMethodRepository therapeuticPlanMethodRepository;
+
+    private final TherapeuticPlanGradeRepository therapeuticPlanGradeRepository;
+
+    public Page<MedicalCase> getAllIncompleteCasesForResident(String username, Pageable pageable, String encodedInfo) {
+        return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedByResidentFalseAndEncodedInfoContains(username, pageable, encodedInfo);
     }
 
     public Page<MedicalCase> getAllCompletedCasesForResident(String username, Pageable pageable, String diagnostic) {
-        return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedTrueAndResidentDiagnosisContainsIgnoreCase(username, pageable, diagnostic);
+        return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedByResidentTrueAndResidentDiagnosisContainsIgnoreCase(username, pageable, diagnostic);
     }
 
-    public Page<MedicalCase> getAllCompletedCases(Pageable pageable) {
-        return medicalCaseRepository.findAllByCompletedTrue(pageable);
+    public Page<MedicalCase> getAllCompletedByResidentCases(Pageable pageable, String encodedInfo) {
+        return medicalCaseRepository.findAllByCompletedByResidentTrueAndCompletedByExpertFalseAndEncodedInfoContains(pageable, encodedInfo);
     }
 
     public Set<MedicalCase> getAllMedicalCasesAssignedTo(String encodedInfo) {
         return medicalCaseRepository.findAllByEncodedInfoOrderByInsertDate(encodedInfo);
-    }
-
-    public MedicalCase getMedicalCase(UUID id) {
-        return medicalCaseRepository.getReferenceById(id);
     }
 
     public MedicalCase addMedicalCase(MedicalCase medicalCase) {
@@ -57,7 +65,6 @@ public class MedicalCaseService {
     private MedicalCase allocateCase(MedicalCase medicalCase) {
         List<Resident> residents = residentService.getAllResidents();
         Resident allocatedResident = residents.get(0); //TODO should be a call to allocationAlgorithm
-//        allocatedResident.setMedicalCases(allocatedResident.getMedicalCases().add(medicalCase));
         medicalCase.setResident(allocatedResident);
 
         LOGGER.info("Assigning resident {} to medical case with id {}", allocatedResident, medicalCase.getId());
@@ -73,22 +80,23 @@ public class MedicalCaseService {
         MedicalCase actualMedicalCase = actualMedicalCaseOptional.get();
 
         if (medicalCase.getCFPImage() != actualMedicalCase.getCFPImage()) {
-//            throw new EntityValidationException(MedicalCase.class.getSimpleName() + " with id: " + medicalCase.getId(), Collections.singleton("You can not change the case!"));
             medicalCase.setCFPImage(actualMedicalCase.getCFPImage());
         }
         medicalCase.setResident(actualMedicalCase.getResident());
+        medicalCase.getClinicalSignGrades().forEach(clinicalSignGrade -> clinicalSignGrade.setMedicalCase(medicalCase));
+        clinicalSignGradeRepository.saveAll(medicalCase.getClinicalSignGrades());
+
+        medicalCase.getDifferentialDiagnosisGrades().forEach(differentialDiagnosisGrade -> {
+            differentialDiagnosisGrade.setDifferentialDiagnosisSign(differentialDiagnosisSignRepository.findByDifferentialDiagnosisAndSign(differentialDiagnosisGrade.getDifferentialDiagnosisSign().getDifferentialDiagnosis(), differentialDiagnosisGrade.getDifferentialDiagnosisSign().getSign()));
+            differentialDiagnosisGrade.setMedicalCase(medicalCase);
+        });
+        differentialDiagnosisGradeRepository.saveAll(medicalCase.getDifferentialDiagnosisGrades());
+        medicalCase.getTherapeuticPlanGrades().forEach(therapeuticPlanGrade -> {
+            therapeuticPlanGrade.setTherapeuticPlanMethod(therapeuticPlanMethodRepository.findByTherapeuticPlanAndMethod(therapeuticPlanGrade.getTherapeuticPlanMethod().getTherapeuticPlan(), therapeuticPlanGrade.getTherapeuticPlanMethod().getMethod()));
+            therapeuticPlanGrade.setMedicalCase(medicalCase);
+        });
+
+        therapeuticPlanGradeRepository.saveAll(medicalCase.getTherapeuticPlanGrades());
         return medicalCaseRepository.save(medicalCase);
-    }
-
-    public MedicalCase completeMedicalCase(UUID id) {
-        Optional<MedicalCase> medicalCaseOptional = medicalCaseRepository.findById(id);
-
-        if (medicalCaseOptional.isPresent()) {
-            MedicalCase medicalCase = medicalCaseOptional.get();
-            medicalCase.setCompleted(true);
-            return medicalCaseRepository.save(medicalCase);
-        }
-
-        return null;
     }
 }

@@ -2,8 +2,8 @@ package com.app.cfp.mapper;
 
 import com.app.cfp.dto.TherapeuticPlanDTO;
 import com.app.cfp.entity.Method;
-import com.app.cfp.entity.TherapeuticPlanMethod;
 import com.app.cfp.entity.TherapeuticPlan;
+import com.app.cfp.entity.TherapeuticPlanMethod;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

@@ -4,10 +4,11 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Data
-public class MedicalCaseDTO {
+public class MedicalCaseFullDTO {
 
     private UUID id;
 
@@ -33,4 +34,18 @@ public class MedicalCaseDTO {
     private Date insertDate;
 
     private float score;
+
+    private ResidentDTO resident;
+
+    private List<ClinicalSignGradeDTO> clinicalSignGrades;
+
+    private List<DifferentialDiagnosisGradeDTO> differentialDiagnosisGrades;
+
+    private List<TherapeuticPlanGradeDTO> therapeuticPlanGrades;
+
+    private boolean completedByResident;
+
+    private boolean completedByExpert;
+
+    private boolean correctDiagnosis;
 }

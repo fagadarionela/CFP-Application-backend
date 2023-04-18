@@ -1,7 +1,7 @@
 package com.app.cfp.controller;
 
 import com.app.cfp.dto.MedicalCaseCustomizedDTO;
-import com.app.cfp.dto.MedicalCaseDTO;
+import com.app.cfp.dto.MedicalCaseFullDTO;
 import com.app.cfp.entity.MedicalCase;
 import com.app.cfp.mapper.MedicalCasesCustomizedMapper;
 import com.app.cfp.mapper.MedicalCasesMapper;
@@ -39,38 +39,41 @@ public class MedicalCaseController {
 
     @GetMapping("/assigned/incomplete")
     @PreAuthorize("hasRole('ROLE_RESIDENT')")
-    public ResponseEntity<Page<MedicalCaseDTO>> getAllAssignedIncompleteMedicalCases(Principal principal, Pageable pageable, @Param("encodedInfo") String encodedInfo) {
+    public ResponseEntity<Page<MedicalCaseFullDTO>> getAllAssignedIncompleteMedicalCases(Principal principal, Pageable pageable, @Param("encodedInfo") String encodedInfo) {
         Page<MedicalCase> medicalCasesPage = medicalCasesService.getAllIncompleteCasesForResident(principal.getName(), pageable, encodedInfo);
 
         return new ResponseEntity<>(medicalCasesPage.map(medicalCase -> {
-                    MedicalCaseDTO medicalCaseDTO = medicalCasesMapper.toDto(medicalCase);
-                    medicalCaseDTO.setCFPImage(ImageUtility.decompressImage(medicalCaseDTO.getCFPImage()));
-                    return medicalCaseDTO;}), HttpStatus.OK);
+            MedicalCaseFullDTO medicalCaseDTO = medicalCasesMapper.toDto(medicalCase);
+            medicalCaseDTO.setCFPImage(ImageUtility.decompressImage(medicalCaseDTO.getCFPImage()));
+            return medicalCaseDTO;
+        }), HttpStatus.OK);
     }
 
     @GetMapping("/assigned/completed")
     @PreAuthorize("hasRole('ROLE_RESIDENT')")
-    public ResponseEntity<Page<MedicalCaseDTO>> getAllAssignedCompleteMedicalCases(Principal principal, Pageable pageable, @Param("diagnostic") String diagnostic) {
+    public ResponseEntity<Page<MedicalCaseFullDTO>> getAllAssignedCompleteMedicalCases(Principal principal, Pageable pageable, @Param("diagnostic") String diagnostic) {
         Page<MedicalCase> medicalCasesPage = medicalCasesService.getAllCompletedCasesForResident(principal.getName(), pageable, diagnostic);
 
         return new ResponseEntity<>(medicalCasesPage.map(medicalCase -> {
-                    MedicalCaseDTO medicalCaseDTO = medicalCasesMapper.toDto(medicalCase);
-                    medicalCaseDTO.setCFPImage(ImageUtility.decompressImage(medicalCaseDTO.getCFPImage()));
-                    return medicalCaseDTO;}), HttpStatus.OK);
+            MedicalCaseFullDTO medicalCaseDTO = medicalCasesMapper.toDto(medicalCase);
+            medicalCaseDTO.setCFPImage(ImageUtility.decompressImage(medicalCaseDTO.getCFPImage()));
+            return medicalCaseDTO;
+        }), HttpStatus.OK);
     }
 
     @GetMapping("/completed")
     @PreAuthorize("hasRole('ROLE_EXPERT')")
-    public ResponseEntity<Page<MedicalCaseDTO>> getAllCompletedMedicalCases(Pageable pageable) {
-        Page<MedicalCase> medicalCasesPage = medicalCasesService.getAllCompletedCases(pageable);
+    public ResponseEntity<Page<MedicalCaseFullDTO>> getAllCompletedMedicalCases(Pageable pageable, @Param("encodedInfo") String encodedInfo) {
+        Page<MedicalCase> medicalCasesPage = medicalCasesService.getAllCompletedByResidentCases(pageable, encodedInfo);
         return new ResponseEntity<>(medicalCasesPage.map(medicalCase -> {
-                    MedicalCaseDTO medicalCaseDTO = medicalCasesMapper.toDto(medicalCase);
-                    medicalCaseDTO.setCFPImage(ImageUtility.decompressImage(medicalCaseDTO.getCFPImage()));
-                    return medicalCaseDTO;}), HttpStatus.OK);
+            MedicalCaseFullDTO medicalCaseDTO = medicalCasesMapper.toDto(medicalCase);
+            medicalCaseDTO.setCFPImage(ImageUtility.decompressImage(medicalCaseDTO.getCFPImage()));
+            return medicalCaseDTO;
+        }), HttpStatus.OK);
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_RESIDENT')")
+    @PreAuthorize("hasAnyRole('ROLE_RESIDENT', 'ROLE_EXPERT')")
     public ResponseEntity<Set<MedicalCaseCustomizedDTO>> getAllMedicalCasesAssignedTo(@RequestParam(value = "encodedInfo") String encodedInfo) {
         Set<MedicalCase> medicalCases = medicalCasesService.getAllMedicalCasesAssignedTo(encodedInfo);
         return new ResponseEntity<>(medicalCases.stream()
@@ -94,37 +97,37 @@ public class MedicalCaseController {
     }
 
     @PutMapping
-    @PreAuthorize("hasRole('ROLE_RESIDENT')")
-    public ResponseEntity<MedicalCaseDTO> updateMedicalCase(@RequestBody MedicalCaseDTO medicalCaseDTO) {
+    @PreAuthorize("hasAnyRole('ROLE_RESIDENT', 'ROLE_EXPERT')")
+    public ResponseEntity<MedicalCaseFullDTO> updateMedicalCase(@RequestBody MedicalCaseFullDTO medicalCaseDTO) {
         MedicalCase returnedMedicalCase = medicalCasesService.updateMedicalCase(medicalCasesMapper.toDomain(medicalCaseDTO));
         return new ResponseEntity<>(medicalCasesMapper.toDto(returnedMedicalCase), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_RESIDENT')")
-    public ResponseEntity<MedicalCaseDTO> completeMedicalCase(@PathVariable UUID id) {
-        MedicalCase returnedMedicalCase = medicalCasesService.completeMedicalCase(id);
-        return new ResponseEntity<>(medicalCasesMapper.toDto(returnedMedicalCase), HttpStatus.OK);
-    }
+//    @PutMapping("/{id}")
+//    @PreAuthorize("hasRole('ROLE_RESIDENT')")
+//    public ResponseEntity<MedicalCaseFullDTO> completeMedicalCase(Principal principal, @PathVariable UUID id) {
+//        MedicalCase returnedMedicalCase = medicalCasesService.completeMedicalCase(principal.getName(), id);
+//        return new ResponseEntity<>(medicalCasesMapper.toDto(returnedMedicalCase), HttpStatus.OK);
+//    }
 
-    @PutMapping("/validate")
-    @PreAuthorize("hasRole('ROLE_RESIDENT')")
-    public ResponseEntity<String> validateMedicalCase(@RequestBody MedicalCaseDTO medicalCaseDTO) {
-//        MedicalCase providedMedicalCase = medicalCasesMapper.toDomain(medicalCaseDTO);
-//        MedicalCase actualMedicalCase = medicalCasesService.getMedicalCase(providedMedicalCase.getId());
-//
-//        if (actualMedicalCase == null) {
-//            return new ResponseEntity<>("The medical with id: " + providedMedicalCase.getId() + " case can not be found!", HttpStatus.NOT_FOUND);
-//        }
-//
-//        if (providedMedicalCase.getCFPImage() != actualMedicalCase.getCFPImage()) {
-//            return new ResponseEntity<>("You can not change the case!", HttpStatus.CONFLICT);
-//        }
-//
-//        MedicalCase returnedMedicalCase = medicalCasesService.updateMedicalCase(providedMedicalCase);
-//        if (returnedMedicalCase == null) {
-//            return new ResponseEntity<>("The medical case could not be updated!", HttpStatus.CONFLICT);
-//        }
-        return new ResponseEntity<>("The medical case was validated!", HttpStatus.OK);
-    }
+//    @PutMapping("/validate")
+//    @PreAuthorize("hasRole('ROLE_RESIDENT')")
+//    public ResponseEntity<String> validateMedicalCase(@RequestBody MedicalCaseDTO medicalCaseDTO) {
+////        MedicalCase providedMedicalCase = medicalCasesMapper.toDomain(medicalCaseDTO);
+////        MedicalCase actualMedicalCase = medicalCasesService.getMedicalCase(providedMedicalCase.getId());
+////
+////        if (actualMedicalCase == null) {
+////            return new ResponseEntity<>("The medical with id: " + providedMedicalCase.getId() + " case can not be found!", HttpStatus.NOT_FOUND);
+////        }
+////
+////        if (providedMedicalCase.getCFPImage() != actualMedicalCase.getCFPImage()) {
+////            return new ResponseEntity<>("You can not change the case!", HttpStatus.CONFLICT);
+////        }
+////
+////        MedicalCase returnedMedicalCase = medicalCasesService.updateMedicalCase(providedMedicalCase);
+////        if (returnedMedicalCase == null) {
+////            return new ResponseEntity<>("The medical case could not be updated!", HttpStatus.CONFLICT);
+////        }
+//        return new ResponseEntity<>("The medical case was validated!", HttpStatus.OK);
+//    }
 }

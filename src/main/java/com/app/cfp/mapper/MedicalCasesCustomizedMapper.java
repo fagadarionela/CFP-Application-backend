@@ -1,7 +1,6 @@
 package com.app.cfp.mapper;
 
 import com.app.cfp.dto.MedicalCaseCustomizedDTO;
-import com.app.cfp.dto.MedicalCaseDTO;
 import com.app.cfp.entity.MedicalCase;
 import org.mapstruct.Mapper;
 

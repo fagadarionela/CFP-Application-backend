@@ -17,11 +17,7 @@ public class TherapeuticPlan {
     @Id
     private String name;
 
-//    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-//    @JoinColumn(name = "therapeuticPlanElements", nullable = false)
-//    private List<Method> therapeuticPlanElements;
-
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE, mappedBy = "therapeuticPlan")
-    List<TherapeuticPlanMethod> therapeuticPlanMethod;
+    private List<TherapeuticPlanMethod> therapeuticPlanMethod;
 
 }

@@ -2,7 +2,6 @@ package com.app.cfp.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
@@ -13,18 +12,21 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
-public class TherapeuticPlanMethod {
+public class ClinicalSignGrade {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "therapeutic_plan")
-    private TherapeuticPlan therapeuticPlan;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "medical_case")
+    private MedicalCase medicalCase;
 
-    @ManyToOne
-    @JoinColumn(name = "method")
-    private Method method;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "clinical_sign")
+    private ClinicalSign clinicalSign;
+
+    boolean checked;
+
+    boolean correct;
 }

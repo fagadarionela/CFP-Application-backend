@@ -1,14 +1,13 @@
 package com.app.cfp.mapper;
 
-import com.app.cfp.dto.MedicalCaseDTO;
+import com.app.cfp.dto.MedicalCaseFullDTO;
 import com.app.cfp.entity.MedicalCase;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface MedicalCasesMapper extends DataMapper<MedicalCase, MedicalCaseDTO> {
+public interface MedicalCasesMapper extends DataMapper<MedicalCase, MedicalCaseFullDTO> {
 
-    MedicalCase toDomain(MedicalCaseDTO medicalCaseDTO);
+    MedicalCase toDomain(MedicalCaseFullDTO medicalCaseFullDTO);
 
-    MedicalCaseDTO toDto(MedicalCase medicalCase);
+    MedicalCaseFullDTO toDto(MedicalCase medicalCase);
 }

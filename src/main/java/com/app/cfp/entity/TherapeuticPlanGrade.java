@@ -1,12 +1,12 @@
 package com.app.cfp.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
+
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -14,15 +14,17 @@ import lombok.NoArgsConstructor;
 @Entity
 public class TherapeuticPlanGrade {
     @Id
-    Long id;
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    private UUID id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "medical_case")
-    MedicalCase medicalCase;
+    private MedicalCase medicalCase;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "therapeutic_plan_method")
-    TherapeuticPlanMethod therapeuticPlanMethod;
+    private TherapeuticPlanMethod therapeuticPlanMethod;
 
     boolean checked;
 

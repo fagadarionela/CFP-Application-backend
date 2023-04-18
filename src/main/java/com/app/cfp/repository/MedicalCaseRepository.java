@@ -13,11 +13,11 @@ import java.util.UUID;
 @Repository
 @Transactional
 public interface MedicalCaseRepository extends JpaRepository<MedicalCase, UUID> {
-    Page<MedicalCase> findAllByCompletedTrue(Pageable pageable);
+    Page<MedicalCase> findAllByCompletedByResidentTrueAndCompletedByExpertFalseAndEncodedInfoContains(Pageable pageable, String encodedInfo);
 
     Set<MedicalCase> findAllByEncodedInfoOrderByInsertDate(String encodedInfo);
 
-    Page<MedicalCase> findAllByResident_Account_UsernameAndCompletedFalseAndEncodedInfoContains(String username, Pageable pageable, String encodedInfo);
+    Page<MedicalCase> findAllByResident_Account_UsernameAndCompletedByResidentFalseAndEncodedInfoContains(String username, Pageable pageable, String encodedInfo);
 
-    Page<MedicalCase> findAllByResident_Account_UsernameAndCompletedTrueAndResidentDiagnosisContainsIgnoreCase(String username, Pageable pageable, String diagnostic);
+    Page<MedicalCase> findAllByResident_Account_UsernameAndCompletedByResidentTrueAndResidentDiagnosisContainsIgnoreCase(String username, Pageable pageable, String diagnostic);
 }

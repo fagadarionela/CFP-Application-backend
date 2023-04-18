@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
+
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -11,15 +14,17 @@ import lombok.NoArgsConstructor;
 @Entity
 public class DifferentialDiagnosisGrade {
     @Id
-    Long id;
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    private UUID id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "medical_case")
-    MedicalCase medicalCase;
+    private MedicalCase medicalCase;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "differential_diagnosis_sign")
-    DifferentialDiagnosisSign differentialDiagnosisSign;
+    private DifferentialDiagnosisSign differentialDiagnosisSign;
 
     boolean checked;
 

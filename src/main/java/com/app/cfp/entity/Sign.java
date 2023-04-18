@@ -1,7 +1,10 @@
 package com.app.cfp.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -15,6 +18,6 @@ public class Sign {
     private String name;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE, mappedBy = "sign")
-    List<DifferentialDiagnosisSign> differentialDiagnosisSign;
+    private List<DifferentialDiagnosisSign> differentialDiagnosisSign;
 
 }

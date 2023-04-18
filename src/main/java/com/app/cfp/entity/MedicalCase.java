@@ -1,6 +1,5 @@
 package com.app.cfp.entity;
 
-import com.app.cfp.dto.DifferentialDiagnosisDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,7 +28,7 @@ public class MedicalCase {
 
     private int difficultyScore;
 
-    @Column(unique = false, nullable = false, length = 100000)
+    @Column(nullable = false, length = 100000)
     private byte[] CFPImage;
 
     private String presumptiveDiagnosis;
@@ -38,17 +37,24 @@ public class MedicalCase {
 
     private String residentDiagnosis;
 
-    @OneToMany(mappedBy = "medicalCase")
-    List<DifferentialDiagnosisGrade> differentialDiagnosisGrades;
+    @OneToMany(mappedBy = "medicalCase", fetch = FetchType.EAGER)
+    private List<ClinicalSignGrade> clinicalSignGrades;
 
-    @OneToMany(mappedBy = "medicalCase")
-    List<TherapeuticPlanGrade> therapeuticPlanGrades;
+    @OneToMany(mappedBy = "medicalCase", fetch = FetchType.EAGER)
+    private List<DifferentialDiagnosisGrade> differentialDiagnosisGrades;
 
-    private boolean completed = false;
+    @OneToMany(mappedBy = "medicalCase", fetch = FetchType.EAGER)
+    private List<TherapeuticPlanGrade> therapeuticPlanGrades;
+
+    private boolean completedByResident;
+
+    private boolean completedByExpert;
+
+    private boolean correctDiagnosis;
 
     private Date insertDate;
 
-    private float score;
+    private float score = 0;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "resident", nullable = false)

@@ -8,7 +8,6 @@ import org.springframework.validation.annotation.Validated;
 
 @SpringBootApplication
 @Validated
-//@EntityScan(basePackages = {"com.app.cfp.entity"})
 public class CfpApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
