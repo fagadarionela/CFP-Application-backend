@@ -2,6 +2,7 @@ package com.app.cfp.controller;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,5 +15,10 @@ public class UserController {
     @RequestMapping(value = "/login")
     public Principal login(Principal principal) {
         return principal;
+    }
+
+    @GetMapping("/")
+    public String home(){
+        return "Hello from Ionela!";
     }
 }

@@ -36,7 +36,6 @@ public class MedicalCaseController {
 
     private final MedicalCasesCustomizedMapper medicalCasesCustomizedMapper;
 
-
     @GetMapping("/assigned/incomplete")
     @PreAuthorize("hasRole('ROLE_RESIDENT')")
     public ResponseEntity<Page<MedicalCaseFullDTO>> getAllAssignedIncompleteMedicalCases(Principal principal, Pageable pageable, @Param("encodedInfo") String encodedInfo) {
