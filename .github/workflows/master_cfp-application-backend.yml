@@ -49,5 +49,5 @@ jobs:
         with:
           app-name: 'cfp-application-backend'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_B2DAB330D27648308F90EBA31F690F63 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_4D06EA5272E84AB795CF6304F85E9D6E }}
           package: '*.jar'
