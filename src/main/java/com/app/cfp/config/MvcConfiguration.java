@@ -19,7 +19,7 @@ public class MvcConfiguration implements WebMvcConfigurer {
     public TomcatContextCustomizer sameSiteCookiesConfig() {
         return context -> {
             final Rfc6265CookieProcessor cookieProcessor = new Rfc6265CookieProcessor();
-            if (!serverPort.equals("8081")) {
+            if (!serverPort.equals("8082")) {
                 cookieProcessor.setSameSiteCookies(SameSiteCookies.NONE.getValue());
             }
             context.setCookieProcessor(cookieProcessor);
