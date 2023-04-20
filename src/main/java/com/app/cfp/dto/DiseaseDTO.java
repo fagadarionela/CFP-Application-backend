@@ -8,8 +8,6 @@ import java.util.UUID;
 @Data
 public class DiseaseDTO {
 
-    private UUID id;
-
     private String name;
 
 

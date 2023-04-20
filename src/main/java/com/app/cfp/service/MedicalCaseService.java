@@ -1,11 +1,9 @@
 package com.app.cfp.service;
 
 import com.app.cfp.controller.handlers.exceptions.model.ResourceNotFoundException;
-import com.app.cfp.entity.Account;
 import com.app.cfp.entity.MedicalCase;
 import com.app.cfp.entity.Resident;
 import com.app.cfp.repository.*;
-import com.app.cfp.utils.AuthorityType;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

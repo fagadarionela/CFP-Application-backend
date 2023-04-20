@@ -3,7 +3,6 @@ package com.app.cfp.service;
 import com.app.cfp.entity.Account;
 import com.app.cfp.repository.AccountRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -5,7 +5,7 @@ import com.app.cfp.entity.Resident;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface ResidentsMapper extends DataMapper<Resident, ResidentDTO> {
+public interface ResidentMapper extends DataMapper<Resident, ResidentDTO> {
     Resident toDomain(ResidentDTO residentDTO);
 
     ResidentDTO toDto(Resident resident);

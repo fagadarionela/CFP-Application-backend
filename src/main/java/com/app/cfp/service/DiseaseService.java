@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -22,8 +23,14 @@ public class DiseaseService {
 
     private final MethodRepository methodRepository;
 
+    private final DiseaseDifferentialDiagnosisSignRepository diseaseDifferentialDiagnosisSignRepository;
+
 
     public Disease addDiagnosis(Disease disease) {
+        if (diseaseRepository.findByName(disease.getName()) != null) {
+            return null;
+        }
+
         ClinicalSignRepository.saveAll(disease.getClinicalSigns());
         if (disease.getDifferentialDiagnosis() != null && !disease.getDifferentialDiagnosis().isEmpty()) {
             disease.getDifferentialDiagnosis().forEach(differentialDiagnosis ->
@@ -43,6 +50,10 @@ public class DiseaseService {
 
     public List<Disease> getAllDiseases() {
         return diseaseRepository.findAll();
+    }
+
+    public void deleteDiseaseById(UUID id) {
+        diseaseRepository.deleteById(id);
     }
 
     public Disease getDiseaseByName(String name) {
