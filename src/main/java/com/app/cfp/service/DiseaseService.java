@@ -13,7 +13,7 @@ import java.util.UUID;
 public class DiseaseService {
     private final DiseaseRepository diseaseRepository;
 
-    private final ClinicalSignRepository ClinicalSignRepository;
+    private final ClinicalSignRepository clinicalSignRepository;
     private final DifferentialDiagnosisRepository differentialDiagnosisRepository;
 
     private final SignRepository signRepository;
@@ -23,15 +23,13 @@ public class DiseaseService {
 
     private final MethodRepository methodRepository;
 
-    private final DiseaseDifferentialDiagnosisSignRepository diseaseDifferentialDiagnosisSignRepository;
-
 
     public Disease addDiagnosis(Disease disease) {
         if (diseaseRepository.findByName(disease.getName()) != null) {
             return null;
         }
 
-        ClinicalSignRepository.saveAll(disease.getClinicalSigns());
+        clinicalSignRepository.saveAll(disease.getClinicalSigns());
         if (disease.getDifferentialDiagnosis() != null && !disease.getDifferentialDiagnosis().isEmpty()) {
             disease.getDifferentialDiagnosis().forEach(differentialDiagnosis ->
                     differentialDiagnosis.getDifferentialDiagnosisSign().forEach(

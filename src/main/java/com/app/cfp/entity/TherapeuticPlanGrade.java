@@ -23,7 +23,10 @@ public class TherapeuticPlanGrade {
     private MedicalCase medicalCase;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "therapeutic_plan_method")
+    @JoinColumns({
+            @JoinColumn(name="therapeuticPlan", referencedColumnName="therapeutic_plan"),
+            @JoinColumn(name="method", referencedColumnName="method")
+    })
     private TherapeuticPlanMethod therapeuticPlanMethod;
 
     boolean checked;

@@ -23,7 +23,10 @@ public class DifferentialDiagnosisGrade {
     private MedicalCase medicalCase;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "differential_diagnosis_sign")
+    @JoinColumns({
+            @JoinColumn(name="differentialDiagnosis", referencedColumnName="differential_diagnosis"),
+            @JoinColumn(name="sign", referencedColumnName="sign")
+    })
     private DifferentialDiagnosisSign differentialDiagnosisSign;
 
     boolean checked;
