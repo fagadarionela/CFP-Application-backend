@@ -1,23 +1,19 @@
 package com.app.cfp.controller;
 
 import com.app.cfp.dto.AccountDTO;
-import com.app.cfp.dto.ResidentDTO;
+import com.app.cfp.dto.StringResponseDTO;
 import com.app.cfp.entity.Account;
-import com.app.cfp.entity.Resident;
 import com.app.cfp.mapper.AccountMapper;
 import com.app.cfp.service.AccountService;
-import com.app.cfp.service.UserDetailsServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -45,12 +41,20 @@ public class UserController {
 
     @PostMapping("/users")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> insertUser(@RequestBody AccountDTO accountDTO) {
+    public ResponseEntity<StringResponseDTO> insertUser(@RequestBody AccountDTO accountDTO) {
         Account account = accountService.addAccount(accountMapper.toDomain(accountDTO));
 
         if (account != null) {
-            return new ResponseEntity<>("The account with username " + account.getUsername() + " was created!", HttpStatus.CREATED);
+            return new ResponseEntity<>(StringResponseDTO.builder().message("The account with username " + account.getUsername() + " was created!").build(), HttpStatus.CREATED);
         }
-        return new ResponseEntity<>("Can not add account!", HttpStatus.CONFLICT);
+        return new ResponseEntity<>(StringResponseDTO.builder().message("Can not add account!").build(), HttpStatus.CONFLICT);
+    }
+
+    @DeleteMapping("/users/{username}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<StringResponseDTO> deleteUser(@PathVariable("username") String username) {
+        accountService.deleteAccount(username);
+
+        return new ResponseEntity<>(StringResponseDTO.builder().message("The account with username " + username + " was deleted!").build(),HttpStatus.CREATED);
     }
 }

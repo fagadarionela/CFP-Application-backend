@@ -11,4 +11,6 @@ import java.util.UUID;
 @Transactional
 public interface DiseaseRepository extends JpaRepository<Disease, UUID> {
     Disease findByName(String name);
+
+    void deleteByName(String name);
 }

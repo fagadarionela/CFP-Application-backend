@@ -50,8 +50,8 @@ public class DiseaseService {
         return diseaseRepository.findAll();
     }
 
-    public void deleteDiseaseById(UUID id) {
-        diseaseRepository.deleteById(id);
+    public void deleteDiseaseByName(String name) {
+        diseaseRepository.deleteByName(name);
     }
 
     public Disease getDiseaseByName(String name) {

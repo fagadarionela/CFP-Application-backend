@@ -10,4 +10,6 @@ import java.util.UUID;
 @Transactional
 public interface AccountRepository extends JpaRepository<Account, UUID> {
     Optional<Account> findByUsername(String username);
+
+    void deleteByUsername(String username);
 }

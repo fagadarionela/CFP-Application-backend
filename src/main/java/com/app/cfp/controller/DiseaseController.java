@@ -1,12 +1,11 @@
 package com.app.cfp.controller;
 
 import com.app.cfp.dto.DiseaseDTO;
+import com.app.cfp.dto.StringResponseDTO;
 import com.app.cfp.entity.Disease;
 import com.app.cfp.mapper.DiseaseMapper;
 import com.app.cfp.service.DiseaseService;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -29,17 +27,17 @@ public class DiseaseController {
 
     @PostMapping()
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> addDisease(@RequestBody DiseaseDTO diseaseDTO) {
+    public ResponseEntity<StringResponseDTO> addDisease(@RequestBody DiseaseDTO diseaseDTO) {
         Disease disease = diseaseService.addDiagnosis(diseaseMapper.toDomain(diseaseDTO));
 
         if (disease != null) {
-            return new ResponseEntity<>("The disease with name " + disease.getName() + " was created!", HttpStatus.CREATED);
+            return new ResponseEntity<>(StringResponseDTO.builder().message("The disease with name " + disease.getName() + " was added!").build(), HttpStatus.CREATED);
         }
-        return new ResponseEntity<>("Can not add disease!", HttpStatus.CONFLICT);
+        return new ResponseEntity<>(StringResponseDTO.builder().message("Can not add disease!").build(), HttpStatus.CONFLICT);
     }
 
     @GetMapping()
-    @PreAuthorize("hasAnyRole('ROLE_RESIDENT', 'ROLE_OPERATOR')")
+    @PreAuthorize("hasAnyRole('ROLE_RESIDENT', 'ROLE_OPERATOR', 'ROLE_EXPERT')")
     public ResponseEntity<Set<String>> getAllDiseases() {
         Set<String> diseases = diseaseService.getAllDiseases().stream().map(Disease::getName).collect(Collectors.toSet());
         return new ResponseEntity<>(diseases, HttpStatus.OK);
@@ -60,11 +58,11 @@ public class DiseaseController {
         return new ResponseEntity<>(diseases.stream().map(diseaseMapper::toDto).collect(Collectors.toList()), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{name}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> deleteDisease(@PathVariable("id") UUID id) {
-        diseaseService.deleteDiseaseById(id);
+    public ResponseEntity<StringResponseDTO> deleteDisease(@PathVariable("name") String name) {
+        diseaseService.deleteDiseaseByName(name);
 
-        return new ResponseEntity<>("Successfully deleted the disease!", HttpStatus.OK);
+        return new ResponseEntity<>(StringResponseDTO.builder().message("Successfully deleted the disease " + name + "!").build(), HttpStatus.OK);
     }
 }

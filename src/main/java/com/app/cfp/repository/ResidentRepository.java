@@ -15,6 +15,5 @@ import java.util.UUID;
 @Transactional
 public interface ResidentRepository extends JpaRepository<Resident, UUID> {
     Optional<Resident> findByAccount_Username(String username);
-
 //    Page<Resident> findAll(Pageable pageable);
 }

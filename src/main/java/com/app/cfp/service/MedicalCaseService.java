@@ -32,19 +32,19 @@ public class MedicalCaseService {
     private final TherapeuticPlanGradeRepository therapeuticPlanGradeRepository;
 
     public Page<MedicalCase> getAllIncompleteCasesForResident(String username, Pageable pageable, String encodedInfo) {
-        return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedByResidentFalseAndEncodedInfoContains(username, pageable, encodedInfo);
+        return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedByResidentFalseAndEncodedInfoContainsOrderByInsertDateDesc(username, pageable, encodedInfo);
     }
 
     public Page<MedicalCase> getAllCompletedCasesForResident(String username, Pageable pageable, String diagnostic) {
-        return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedByResidentTrueAndResidentDiagnosisContainsIgnoreCase(username, pageable, diagnostic);
+        return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedByResidentTrueAndResidentDiagnosisContainsIgnoreCaseOrderByInsertDateDesc(username, pageable, diagnostic);
     }
 
     public Page<MedicalCase> getAllCompletedByResidentCases(Pageable pageable, String encodedInfo) {
-        return medicalCaseRepository.findAllByCompletedByResidentTrueAndCompletedByExpertFalseAndEncodedInfoContains(pageable, encodedInfo);
+        return medicalCaseRepository.findAllByCompletedByResidentTrueAndCompletedByExpertFalseAndEncodedInfoContainsOrderByInsertDateDesc(pageable, encodedInfo);
     }
 
     public Set<MedicalCase> getAllMedicalCasesAssignedTo(String encodedInfo) {
-        return medicalCaseRepository.findAllByEncodedInfoOrderByInsertDate(encodedInfo);
+        return medicalCaseRepository.findAllByEncodedInfoOrderByInsertDateDesc(encodedInfo);
     }
 
     public MedicalCase addMedicalCase(MedicalCase medicalCase) {
@@ -58,6 +58,19 @@ public class MedicalCaseService {
         medicalCase.setInsertDate(new Date());
 
         return allocateCase(medicalCase);
+    }
+
+    public MedicalCase addDrawingToMedicalCase(MedicalCase medicalCase) {
+        Optional<MedicalCase> actualMedicalCaseOptional = medicalCaseRepository.findById(medicalCase.getId());
+        if (!actualMedicalCaseOptional.isPresent()) {
+            throw new ResourceNotFoundException(MedicalCase.class.getSimpleName() + " with id: " + medicalCase.getId());
+        }
+        MedicalCase actualMedicalCase = actualMedicalCaseOptional.get();
+
+        if (medicalCase.getCFPImage() != actualMedicalCase.getCFPImage()) {
+            medicalCase.setCFPImage(actualMedicalCase.getCFPImage());
+        }
+        return medicalCaseRepository.save(medicalCase);
     }
 
     private MedicalCase allocateCase(MedicalCase medicalCase) {

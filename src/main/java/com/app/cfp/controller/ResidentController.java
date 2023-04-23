@@ -1,6 +1,7 @@
 package com.app.cfp.controller;
 
 import com.app.cfp.dto.ResidentDTO;
+import com.app.cfp.dto.StringResponseDTO;
 import com.app.cfp.entity.Resident;
 import com.app.cfp.mapper.ResidentMapper;
 import com.app.cfp.service.ResidentService;
@@ -29,13 +30,13 @@ public class ResidentController {
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> addResident(@RequestBody ResidentDTO residentDTO) {
+    public ResponseEntity<StringResponseDTO> addResident(@RequestBody ResidentDTO residentDTO) {
         Resident resident = residentService.addResident(residentMapper.toDomain(residentDTO));
 
         if (resident != null) {
-            return new ResponseEntity<>("The resident with id " + resident.getId() + " was created!", HttpStatus.CREATED);
+            return new ResponseEntity<>(StringResponseDTO.builder().message("The resident with id " + resident.getId() + " was created!").build(), HttpStatus.CREATED);
         }
-        return new ResponseEntity<>("Can not add resident!", HttpStatus.CONFLICT);
+        return new ResponseEntity<>(StringResponseDTO.builder().message("Can not add resident!").build(), HttpStatus.CONFLICT);
     }
 
     @GetMapping
@@ -48,16 +49,16 @@ public class ResidentController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> deleteResident(@PathVariable("id") UUID id) {
+    public ResponseEntity<StringResponseDTO> deleteResident(@PathVariable("id") UUID id) {
         residentService.deleteResidentById(id);
 
-        return new ResponseEntity<>("Successfully deleted the resident!", HttpStatus.OK);
+        return new ResponseEntity<>(StringResponseDTO.builder().message("Successfully deleted the resident!").build(), HttpStatus.OK);
     }
 
     @DeleteMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> deleteAllResidents() {
+    public ResponseEntity<StringResponseDTO> deleteAllResidents() {
         residentService.deleteAllResidents();
-        return new ResponseEntity<>("Successfully deleted all the residents!", HttpStatus.OK);
+        return new ResponseEntity<>(StringResponseDTO.builder().message("Successfully deleted all the residents!").build(), HttpStatus.OK);
     }
 }

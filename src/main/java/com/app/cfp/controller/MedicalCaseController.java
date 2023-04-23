@@ -2,6 +2,7 @@ package com.app.cfp.controller;
 
 import com.app.cfp.dto.MedicalCaseCustomizedDTO;
 import com.app.cfp.dto.MedicalCaseFullDTO;
+import com.app.cfp.dto.StringResponseDTO;
 import com.app.cfp.entity.MedicalCase;
 import com.app.cfp.mapper.MedicalCasesCustomizedMapper;
 import com.app.cfp.mapper.MedicalCasesMapper;
@@ -21,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -44,6 +44,9 @@ public class MedicalCaseController {
         return new ResponseEntity<>(medicalCasesPage.map(medicalCase -> {
             MedicalCaseFullDTO medicalCaseDTO = medicalCasesMapper.toDto(medicalCase);
             medicalCaseDTO.setCFPImage(ImageUtility.decompressImage(medicalCaseDTO.getCFPImage()));
+            if (medicalCaseDTO.getCFPImageCustomized() != null) {
+                medicalCaseDTO.setCFPImageCustomized(ImageUtility.decompressImage(medicalCaseDTO.getCFPImageCustomized()));
+            }
             return medicalCaseDTO;
         }), HttpStatus.OK);
     }
@@ -67,6 +70,9 @@ public class MedicalCaseController {
         return new ResponseEntity<>(medicalCasesPage.map(medicalCase -> {
             MedicalCaseFullDTO medicalCaseDTO = medicalCasesMapper.toDto(medicalCase);
             medicalCaseDTO.setCFPImage(ImageUtility.decompressImage(medicalCaseDTO.getCFPImage()));
+            if (medicalCaseDTO.getCFPImageCustomized() != null) {
+                medicalCaseDTO.setCFPImageCustomized(ImageUtility.decompressImage(medicalCaseDTO.getCFPImageCustomized()));
+            }
             return medicalCaseDTO;
         }), HttpStatus.OK);
     }
@@ -85,14 +91,28 @@ public class MedicalCaseController {
 
     @PostMapping()
     @PreAuthorize("hasRole('ROLE_OPERATOR')")
-    public ResponseEntity<UUID> addMedicalCase(@RequestPart("image") MultipartFile image, @RequestPart("medicalCase") String medicalCaseJSON) throws IOException {
+    public ResponseEntity<StringResponseDTO> addMedicalCase(@RequestPart("image") MultipartFile image, @RequestPart("medicalCase") String medicalCaseJSON) throws IOException {
+        System.out.println(image);
         ObjectMapper objectMapper = new ObjectMapper();
         MedicalCase medicalCase = objectMapper.readValue(medicalCaseJSON, MedicalCase.class);
         medicalCase.setCFPImage(ImageUtility.compressImage(image.getBytes()));
 
         MedicalCase returnedMedicalCase = medicalCasesService.addMedicalCase(medicalCase);
 
-        return new ResponseEntity<>(returnedMedicalCase.getId(), HttpStatus.CREATED);
+        return new ResponseEntity<>(StringResponseDTO.builder().message("The medical case with id " + returnedMedicalCase.getId() + " was added!").build(), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/drawing")
+    @PreAuthorize("hasAnyRole('ROLE_RESIDENT', 'ROLE_EXPERT')")
+    public ResponseEntity<StringResponseDTO> addDrawing(@RequestPart("image") MultipartFile image, @RequestPart("medicalCase") String medicalCaseJSON) throws IOException {
+        System.out.println(image);
+        ObjectMapper objectMapper = new ObjectMapper();
+        MedicalCase medicalCase = objectMapper.readValue(medicalCaseJSON, MedicalCase.class);
+        medicalCase.setCFPImageCustomized(ImageUtility.compressImage(image.getBytes()));
+
+        MedicalCase returnedMedicalCase = medicalCasesService.addDrawingToMedicalCase(medicalCase);
+
+        return new ResponseEntity<>(StringResponseDTO.builder().message("The medical case with id " + returnedMedicalCase.getId() + " was updated!").build(), HttpStatus.CREATED);
     }
 
     @PutMapping

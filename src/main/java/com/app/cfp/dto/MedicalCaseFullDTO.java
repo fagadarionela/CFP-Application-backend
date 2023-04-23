@@ -23,13 +23,11 @@ public class MedicalCaseFullDTO {
     @NotNull
     private byte[] CFPImage;
 
+    private byte[] CFPImageCustomized;
+
     private String presumptiveDiagnosis;
 
     private String residentDiagnosis;
-
-    private String differentialDiagnosis;
-
-    private String therapeuticPlan;
 
     private Date insertDate;
 
@@ -47,5 +45,7 @@ public class MedicalCaseFullDTO {
 
     private boolean completedByExpert;
 
-    private boolean correctDiagnosis;
+    private String correctDiagnosis;
+
+    private boolean saved;
 }

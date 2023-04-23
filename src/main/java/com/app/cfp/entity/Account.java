@@ -27,5 +27,4 @@ public class Account implements Serializable {
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private AuthorityType role;
-
 }

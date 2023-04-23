@@ -31,9 +31,10 @@ public class MedicalCase {
     @Column(nullable = false, length = 100000)
     private byte[] CFPImage;
 
-    private String presumptiveDiagnosis;
+    @Column(length = 100000)
+    private byte[] CFPImageCustomized;
 
-    private String diagnosis;
+    private String presumptiveDiagnosis;
 
     private String residentDiagnosis;
 
@@ -50,7 +51,9 @@ public class MedicalCase {
 
     private boolean completedByExpert;
 
-    private boolean correctDiagnosis;
+    private String correctDiagnosis;
+
+    private boolean saved;
 
     private Date insertDate;
 
