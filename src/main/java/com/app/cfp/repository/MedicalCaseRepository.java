@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -18,6 +19,8 @@ public interface MedicalCaseRepository extends JpaRepository<MedicalCase, UUID> 
     Set<MedicalCase> findAllByEncodedInfoOrderByInsertDateDesc(String encodedInfo);
 
     Page<MedicalCase> findAllByResident_Account_UsernameAndCompletedByResidentFalseAndEncodedInfoContainsOrderByInsertDateDesc(String username, Pageable pageable, String encodedInfo);
+
+    List<MedicalCase> findAllByResident_Account_UsernameOrderByInsertDateDesc(String username);
 
     Page<MedicalCase> findAllByResident_Account_UsernameAndCompletedByResidentTrueAndResidentDiagnosisContainsIgnoreCaseOrderByInsertDateDesc(String username, Pageable pageable, String diagnostic);
 }

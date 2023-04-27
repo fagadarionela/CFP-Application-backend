@@ -21,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -49,6 +51,13 @@ public class MedicalCaseController {
             }
             return medicalCaseDTO;
         }), HttpStatus.OK);
+    }
+
+    @GetMapping("/assigned/all")
+    @PreAuthorize("hasRole('ROLE_RESIDENT')")
+    public ResponseEntity<List<MedicalCaseFullDTO>> getAllAssignedMedicalCases(Principal principal) {
+        List<MedicalCase> medicalCases = medicalCasesService.getAllCasesForResident(principal.getName());
+        return new ResponseEntity<>(medicalCases.stream().map(medicalCasesMapper::toDto).collect(Collectors.toList()), HttpStatus.OK);
     }
 
     @GetMapping("/assigned/completed")
@@ -107,10 +116,8 @@ public class MedicalCaseController {
     public ResponseEntity<StringResponseDTO> addDrawing(@RequestPart("image") MultipartFile image, @RequestPart("medicalCase") String medicalCaseJSON) throws IOException {
         System.out.println(image);
         ObjectMapper objectMapper = new ObjectMapper();
-        MedicalCase medicalCase = objectMapper.readValue(medicalCaseJSON, MedicalCase.class);
-        medicalCase.setCFPImageCustomized(ImageUtility.compressImage(image.getBytes()));
 
-        MedicalCase returnedMedicalCase = medicalCasesService.addDrawingToMedicalCase(medicalCase);
+        MedicalCase returnedMedicalCase = medicalCasesService.addDrawingToMedicalCase(objectMapper.readValue(medicalCaseJSON, MedicalCase.class), ImageUtility.compressImage(image.getBytes()));
 
         return new ResponseEntity<>(StringResponseDTO.builder().message("The medical case with id " + returnedMedicalCase.getId() + " was updated!").build(), HttpStatus.CREATED);
     }
@@ -121,32 +128,4 @@ public class MedicalCaseController {
         MedicalCase returnedMedicalCase = medicalCasesService.updateMedicalCase(medicalCasesMapper.toDomain(medicalCaseDTO));
         return new ResponseEntity<>(medicalCasesMapper.toDto(returnedMedicalCase), HttpStatus.OK);
     }
-
-//    @PutMapping("/{id}")
-//    @PreAuthorize("hasRole('ROLE_RESIDENT')")
-//    public ResponseEntity<MedicalCaseFullDTO> completeMedicalCase(Principal principal, @PathVariable UUID id) {
-//        MedicalCase returnedMedicalCase = medicalCasesService.completeMedicalCase(principal.getName(), id);
-//        return new ResponseEntity<>(medicalCasesMapper.toDto(returnedMedicalCase), HttpStatus.OK);
-//    }
-
-//    @PutMapping("/validate")
-//    @PreAuthorize("hasRole('ROLE_RESIDENT')")
-//    public ResponseEntity<String> validateMedicalCase(@RequestBody MedicalCaseDTO medicalCaseDTO) {
-////        MedicalCase providedMedicalCase = medicalCasesMapper.toDomain(medicalCaseDTO);
-////        MedicalCase actualMedicalCase = medicalCasesService.getMedicalCase(providedMedicalCase.getId());
-////
-////        if (actualMedicalCase == null) {
-////            return new ResponseEntity<>("The medical with id: " + providedMedicalCase.getId() + " case can not be found!", HttpStatus.NOT_FOUND);
-////        }
-////
-////        if (providedMedicalCase.getCFPImage() != actualMedicalCase.getCFPImage()) {
-////            return new ResponseEntity<>("You can not change the case!", HttpStatus.CONFLICT);
-////        }
-////
-////        MedicalCase returnedMedicalCase = medicalCasesService.updateMedicalCase(providedMedicalCase);
-////        if (returnedMedicalCase == null) {
-////            return new ResponseEntity<>("The medical case could not be updated!", HttpStatus.CONFLICT);
-////        }
-//        return new ResponseEntity<>("The medical case was validated!", HttpStatus.OK);
-//    }
 }

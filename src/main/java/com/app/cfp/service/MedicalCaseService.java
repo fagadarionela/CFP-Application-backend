@@ -4,12 +4,14 @@ import com.app.cfp.controller.handlers.exceptions.model.ResourceNotFoundExceptio
 import com.app.cfp.entity.MedicalCase;
 import com.app.cfp.entity.Resident;
 import com.app.cfp.repository.*;
+import com.app.cfp.utils.ImageUtility;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -33,6 +35,10 @@ public class MedicalCaseService {
 
     public Page<MedicalCase> getAllIncompleteCasesForResident(String username, Pageable pageable, String encodedInfo) {
         return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedByResidentFalseAndEncodedInfoContainsOrderByInsertDateDesc(username, pageable, encodedInfo);
+    }
+
+    public List<MedicalCase> getAllCasesForResident(String username) {
+        return medicalCaseRepository.findAllByResident_Account_UsernameOrderByInsertDateDesc(username);
     }
 
     public Page<MedicalCase> getAllCompletedCasesForResident(String username, Pageable pageable, String diagnostic) {
@@ -60,17 +66,15 @@ public class MedicalCaseService {
         return allocateCase(medicalCase);
     }
 
-    public MedicalCase addDrawingToMedicalCase(MedicalCase medicalCase) {
+    public MedicalCase addDrawingToMedicalCase(MedicalCase medicalCase, byte[] image) {
         Optional<MedicalCase> actualMedicalCaseOptional = medicalCaseRepository.findById(medicalCase.getId());
         if (!actualMedicalCaseOptional.isPresent()) {
             throw new ResourceNotFoundException(MedicalCase.class.getSimpleName() + " with id: " + medicalCase.getId());
         }
         MedicalCase actualMedicalCase = actualMedicalCaseOptional.get();
 
-        if (medicalCase.getCFPImage() != actualMedicalCase.getCFPImage()) {
-            medicalCase.setCFPImage(actualMedicalCase.getCFPImage());
-        }
-        return medicalCaseRepository.save(medicalCase);
+        actualMedicalCase.setCFPImageCustomized(image);
+        return medicalCaseRepository.save(actualMedicalCase);
     }
 
     private MedicalCase allocateCase(MedicalCase medicalCase) {
