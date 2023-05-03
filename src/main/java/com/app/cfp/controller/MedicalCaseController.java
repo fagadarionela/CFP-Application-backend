@@ -6,6 +6,7 @@ import com.app.cfp.dto.StringResponseDTO;
 import com.app.cfp.entity.MedicalCase;
 import com.app.cfp.mapper.MedicalCasesCustomizedMapper;
 import com.app.cfp.mapper.MedicalCasesMapper;
+import com.app.cfp.service.DiseaseService;
 import com.app.cfp.service.MedicalCaseService;
 import com.app.cfp.utils.ImageUtility;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,9 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -38,19 +39,14 @@ public class MedicalCaseController {
 
     private final MedicalCasesCustomizedMapper medicalCasesCustomizedMapper;
 
+    private final DiseaseService diseaseService;
+
     @GetMapping("/assigned/incomplete")
     @PreAuthorize("hasRole('ROLE_RESIDENT')")
     public ResponseEntity<Page<MedicalCaseFullDTO>> getAllAssignedIncompleteMedicalCases(Principal principal, Pageable pageable, @Param("encodedInfo") String encodedInfo) {
         Page<MedicalCase> medicalCasesPage = medicalCasesService.getAllIncompleteCasesForResident(principal.getName(), pageable, encodedInfo);
 
-        return new ResponseEntity<>(medicalCasesPage.map(medicalCase -> {
-            MedicalCaseFullDTO medicalCaseDTO = medicalCasesMapper.toDto(medicalCase);
-            medicalCaseDTO.setCFPImage(ImageUtility.decompressImage(medicalCaseDTO.getCFPImage()));
-            if (medicalCaseDTO.getCFPImageCustomized() != null) {
-                medicalCaseDTO.setCFPImageCustomized(ImageUtility.decompressImage(medicalCaseDTO.getCFPImageCustomized()));
-            }
-            return medicalCaseDTO;
-        }), HttpStatus.OK);
+        return new ResponseEntity<>(medicalCasesPage.map(medicalCasesMapper::toDto), HttpStatus.OK);
     }
 
     @GetMapping("/assigned/all")
@@ -64,38 +60,21 @@ public class MedicalCaseController {
     @PreAuthorize("hasRole('ROLE_RESIDENT')")
     public ResponseEntity<Page<MedicalCaseFullDTO>> getAllAssignedCompleteMedicalCases(Principal principal, Pageable pageable, @Param("diagnostic") String diagnostic) {
         Page<MedicalCase> medicalCasesPage = medicalCasesService.getAllCompletedCasesForResident(principal.getName(), pageable, diagnostic);
-
-        return new ResponseEntity<>(medicalCasesPage.map(medicalCase -> {
-            MedicalCaseFullDTO medicalCaseDTO = medicalCasesMapper.toDto(medicalCase);
-            medicalCaseDTO.setCFPImage(ImageUtility.decompressImage(medicalCaseDTO.getCFPImage()));
-            return medicalCaseDTO;
-        }), HttpStatus.OK);
+        return new ResponseEntity<>(medicalCasesPage.map(medicalCasesMapper::toDto), HttpStatus.OK);
     }
 
     @GetMapping("/completed")
     @PreAuthorize("hasRole('ROLE_EXPERT')")
     public ResponseEntity<Page<MedicalCaseFullDTO>> getAllCompletedMedicalCases(Pageable pageable, @Param("encodedInfo") String encodedInfo) {
         Page<MedicalCase> medicalCasesPage = medicalCasesService.getAllCompletedByResidentCases(pageable, encodedInfo);
-        return new ResponseEntity<>(medicalCasesPage.map(medicalCase -> {
-            MedicalCaseFullDTO medicalCaseDTO = medicalCasesMapper.toDto(medicalCase);
-            medicalCaseDTO.setCFPImage(ImageUtility.decompressImage(medicalCaseDTO.getCFPImage()));
-            if (medicalCaseDTO.getCFPImageCustomized() != null) {
-                medicalCaseDTO.setCFPImageCustomized(ImageUtility.decompressImage(medicalCaseDTO.getCFPImageCustomized()));
-            }
-            return medicalCaseDTO;
-        }), HttpStatus.OK);
+        return new ResponseEntity<>(medicalCasesPage.map(medicalCasesMapper::toDto), HttpStatus.OK);
     }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ROLE_RESIDENT', 'ROLE_EXPERT')")
     public ResponseEntity<Set<MedicalCaseCustomizedDTO>> getAllMedicalCasesAssignedTo(@RequestParam(value = "encodedInfo") String encodedInfo) {
         Set<MedicalCase> medicalCases = medicalCasesService.getAllMedicalCasesAssignedTo(encodedInfo);
-        return new ResponseEntity<>(medicalCases.stream()
-                .map(medicalCase -> {
-                    MedicalCaseCustomizedDTO medicalCaseCustomizedDTO = medicalCasesCustomizedMapper.toDto(medicalCase);
-                    medicalCaseCustomizedDTO.setCFPImage(ImageUtility.decompressImage(medicalCaseCustomizedDTO.getCFPImage()));
-                    return medicalCaseCustomizedDTO;
-                }).collect(Collectors.toSet()), HttpStatus.OK);
+        return new ResponseEntity<>(medicalCases.stream().map(medicalCasesCustomizedMapper::toDto).collect(Collectors.toSet()), HttpStatus.OK);
     }
 
     @PostMapping()
@@ -113,11 +92,8 @@ public class MedicalCaseController {
 
     @PostMapping("/drawing")
     @PreAuthorize("hasAnyRole('ROLE_RESIDENT', 'ROLE_EXPERT')")
-    public ResponseEntity<StringResponseDTO> addDrawing(@RequestPart("image") MultipartFile image, @RequestPart("medicalCase") String medicalCaseJSON) throws IOException {
-        System.out.println(image);
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        MedicalCase returnedMedicalCase = medicalCasesService.addDrawingToMedicalCase(objectMapper.readValue(medicalCaseJSON, MedicalCase.class), ImageUtility.compressImage(image.getBytes()));
+    public ResponseEntity<StringResponseDTO> addDrawing(@RequestPart("image") MultipartFile image, @RequestPart("id") String medicalCaseJSON) throws IOException {
+        MedicalCase returnedMedicalCase = medicalCasesService.addDrawingToMedicalCase(UUID.fromString(medicalCaseJSON), ImageUtility.compressImage(image.getBytes()));
 
         return new ResponseEntity<>(StringResponseDTO.builder().message("The medical case with id " + returnedMedicalCase.getId() + " was updated!").build(), HttpStatus.CREATED);
     }

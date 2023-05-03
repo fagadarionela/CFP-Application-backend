@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class MedicalCase {
+public class MedicalCase implements Comparable<MedicalCase> {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
@@ -22,7 +23,7 @@ public class MedicalCase {
 
     private String encodedInfo;
 
-    private Date birthDate;
+    private LocalDateTime allocationDate;
 
     private String additionalInformation;
 
@@ -57,9 +58,16 @@ public class MedicalCase {
 
     private Date insertDate;
 
-    private float score = 0;
+    private double score = 0;
+
+    private double grade = 1;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "resident", nullable = false)
     private Resident resident;
+
+    @Override
+    public int compareTo(MedicalCase o) {
+        return this.getAllocationDate().compareTo(o.getAllocationDate());
+    }
 }

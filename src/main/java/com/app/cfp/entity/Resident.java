@@ -5,6 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.UUID;
 
 @Data
@@ -24,5 +26,7 @@ public class Resident {
     private Account account;
 
     @OneToMany(mappedBy = "resident", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Set<MedicalCase> medicalCases;
+    private SortedSet<MedicalCase> medicalCases = new TreeSet<>();
+
+    private Double grade = 1.0d;
 }

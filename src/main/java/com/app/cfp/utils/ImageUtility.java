@@ -7,7 +7,7 @@ import java.util.zip.Inflater;
 public class ImageUtility {
 
     public static byte[] compressImage(byte[] data) {
-
+        if (data == null) return null;
         Deflater deflater = new Deflater();
         deflater.setLevel(Deflater.BEST_COMPRESSION);
         deflater.setInput(data);
@@ -27,6 +27,7 @@ public class ImageUtility {
     }
 
     public static byte[] decompressImage(byte[] data) {
+        if (data == null) return null;
         Inflater inflater = new Inflater();
         inflater.setInput(data);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);

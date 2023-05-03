@@ -4,16 +4,17 @@ import com.app.cfp.controller.handlers.exceptions.model.ResourceNotFoundExceptio
 import com.app.cfp.entity.MedicalCase;
 import com.app.cfp.entity.Resident;
 import com.app.cfp.repository.*;
-import com.app.cfp.utils.ImageUtility;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -22,6 +23,10 @@ public class MedicalCaseService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MedicalCaseService.class);
     private final MedicalCaseRepository medicalCaseRepository;
     private final ResidentService residentService;
+
+    private final DiseaseService diseaseService;
+
+    private final AllocationService allocationService;
 
     private final ClinicalSignGradeRepository clinicalSignGradeRepository;
 
@@ -45,6 +50,10 @@ public class MedicalCaseService {
         return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedByResidentTrueAndResidentDiagnosisContainsIgnoreCaseOrderByInsertDateDesc(username, pageable, diagnostic);
     }
 
+    public List<MedicalCase> getAllCasesForResidentAllocatedInDate(String username, Date date) {
+        return medicalCaseRepository.findAllByResident_Account_UsernameAndAllocationDate(username, date);
+    }
+
     public Page<MedicalCase> getAllCompletedByResidentCases(Pageable pageable, String encodedInfo) {
         return medicalCaseRepository.findAllByCompletedByResidentTrueAndCompletedByExpertFalseAndEncodedInfoContainsOrderByInsertDateDesc(pageable, encodedInfo);
     }
@@ -62,14 +71,15 @@ public class MedicalCaseService {
         }
         medicalCase.setDifficultyScore(1);
         medicalCase.setInsertDate(new Date());
+        medicalCase.setAllocationDate(LocalDateTime.now());
 
         return allocateCase(medicalCase);
     }
 
-    public MedicalCase addDrawingToMedicalCase(MedicalCase medicalCase, byte[] image) {
-        Optional<MedicalCase> actualMedicalCaseOptional = medicalCaseRepository.findById(medicalCase.getId());
+    public MedicalCase addDrawingToMedicalCase(UUID medicalCaseId, byte[] image) {
+        Optional<MedicalCase> actualMedicalCaseOptional = medicalCaseRepository.findById(medicalCaseId);
         if (!actualMedicalCaseOptional.isPresent()) {
-            throw new ResourceNotFoundException(MedicalCase.class.getSimpleName() + " with id: " + medicalCase.getId());
+            throw new ResourceNotFoundException(MedicalCase.class.getSimpleName() + " with id: " + medicalCaseId);
         }
         MedicalCase actualMedicalCase = actualMedicalCaseOptional.get();
 
@@ -79,7 +89,7 @@ public class MedicalCaseService {
 
     private MedicalCase allocateCase(MedicalCase medicalCase) {
         List<Resident> residents = residentService.getAllResidents();
-        Resident allocatedResident = residents.get(0); //TODO should be a call to allocationAlgorithm
+        Resident allocatedResident = allocationService.allocateMedicalCase(medicalCase);
         medicalCase.setResident(allocatedResident);
 
         LOGGER.info("Assigning resident {} to medical case with id {}", allocatedResident, medicalCase.getId());
@@ -97,7 +107,17 @@ public class MedicalCaseService {
         if (medicalCase.getCFPImage() != actualMedicalCase.getCFPImage()) {
             medicalCase.setCFPImage(actualMedicalCase.getCFPImage());
         }
-        medicalCase.setResident(actualMedicalCase.getResident());
+        if (medicalCase.getCFPImageCustomized() != actualMedicalCase.getCFPImageCustomized()) {
+            medicalCase.setCFPImageCustomized(actualMedicalCase.getCFPImageCustomized());
+        }
+        Resident resident = actualMedicalCase.getResident();
+        if (medicalCase.isCompletedByExpert()){
+            List<MedicalCase> completeMedicalCases = resident.getMedicalCases().stream().filter(MedicalCase::isCompletedByExpert).collect(Collectors.toList());
+            double average = completeMedicalCases.stream().mapToDouble(MedicalCase::getGrade).sum();
+
+            resident.setGrade(average/completeMedicalCases.size());
+        }
+        medicalCase.setResident(resident);
         medicalCase.getClinicalSignGrades().forEach(clinicalSignGrade -> clinicalSignGrade.setMedicalCase(medicalCase));
         clinicalSignGradeRepository.saveAll(medicalCase.getClinicalSignGrades());
 

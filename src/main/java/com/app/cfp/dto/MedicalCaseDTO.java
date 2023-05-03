@@ -13,8 +13,6 @@ public class MedicalCaseDTO {
 
     private String encodedInfo;
 
-    private Date birthDate;
-
     private String additionalInformation;
 
     private int difficultyScore;
@@ -32,5 +30,5 @@ public class MedicalCaseDTO {
 
     private Date insertDate;
 
-    private float score;
+    private double score;
 }

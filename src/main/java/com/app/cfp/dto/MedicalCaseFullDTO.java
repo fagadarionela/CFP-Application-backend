@@ -31,7 +31,7 @@ public class MedicalCaseFullDTO {
 
     private Date insertDate;
 
-    private float score;
+    private double score;
 
     private ResidentDTO resident;
 
