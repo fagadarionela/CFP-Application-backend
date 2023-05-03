@@ -88,7 +88,6 @@ public class MedicalCaseService {
     }
 
     private MedicalCase allocateCase(MedicalCase medicalCase) {
-        List<Resident> residents = residentService.getAllResidents();
         Resident allocatedResident = allocationService.allocateMedicalCase(medicalCase);
         medicalCase.setResident(allocatedResident);
 
