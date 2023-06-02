@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Builder
-public class ClinicalSign {
+public class EducationalTopic {
 
     @Id
     private String name;

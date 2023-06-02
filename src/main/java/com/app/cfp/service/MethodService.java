@@ -10,8 +10,10 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class MethodService {
+
     private final MethodRepository MethodRepository;
-    public List<Method> getAllMethods(){
+
+    public List<Method> getAllMethods() {
         return MethodRepository.findAll();
     }
 }

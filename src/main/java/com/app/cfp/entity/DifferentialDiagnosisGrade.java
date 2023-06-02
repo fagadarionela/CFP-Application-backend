@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.UUID;
@@ -12,7 +13,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@ToString(exclude = "medicalCase")
 public class DifferentialDiagnosisGrade {
+
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
@@ -24,8 +27,8 @@ public class DifferentialDiagnosisGrade {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumns({
-            @JoinColumn(name="differentialDiagnosis", referencedColumnName="differential_diagnosis"),
-            @JoinColumn(name="sign", referencedColumnName="sign")
+            @JoinColumn(name = "differentialDiagnosis", referencedColumnName = "differential_diagnosis"),
+            @JoinColumn(name = "sign", referencedColumnName = "sign")
     })
     private DifferentialDiagnosisSign differentialDiagnosisSign;
 

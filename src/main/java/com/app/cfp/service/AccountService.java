@@ -15,6 +15,7 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class AccountService {
+
     private final AccountRepository accountRepository;
 
     private final ResidentRepository residentRepository;

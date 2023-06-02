@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 @CrossOrigin
 public class SignController {
 
-
     private final SignService SignService;
 
     private final SignMapper SignMapper;

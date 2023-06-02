@@ -55,6 +55,6 @@ public class UserController {
     public ResponseEntity<StringResponseDTO> deleteUser(@PathVariable("username") String username) {
         accountService.deleteAccount(username);
 
-        return new ResponseEntity<>(StringResponseDTO.builder().message("The account with username " + username + " was deleted!").build(),HttpStatus.CREATED);
+        return new ResponseEntity<>(StringResponseDTO.builder().message("The account with username " + username + " was deleted!").build(), HttpStatus.CREATED);
     }
 }

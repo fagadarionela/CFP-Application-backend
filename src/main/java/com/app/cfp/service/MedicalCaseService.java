@@ -12,19 +12,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class MedicalCaseService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MedicalCaseService.class);
-    private final MedicalCaseRepository medicalCaseRepository;
-    private final ResidentService residentService;
 
-    private final DiseaseService diseaseService;
+    private final MedicalCaseRepository medicalCaseRepository;
 
     private final AllocationService allocationService;
 
@@ -38,8 +35,10 @@ public class MedicalCaseService {
 
     private final TherapeuticPlanGradeRepository therapeuticPlanGradeRepository;
 
+    private final ResidentRepository residentRepository;
+
     public Page<MedicalCase> getAllIncompleteCasesForResident(String username, Pageable pageable, String encodedInfo) {
-        return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedByResidentFalseAndEncodedInfoContainsOrderByInsertDateDesc(username, pageable, encodedInfo);
+        return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedByResidentFalseAndEncodedInfoContainsOrderByAllocationDateDesc(username, pageable, encodedInfo);
     }
 
     public List<MedicalCase> getAllCasesForResident(String username) {
@@ -64,21 +63,20 @@ public class MedicalCaseService {
 
     public MedicalCase addMedicalCase(MedicalCase medicalCase) {
         //Send medicalCase to DL algorithm
-        //TODO
         //Set presumptive diagnosis and difficulty score
         if (medicalCase.getPresumptiveDiagnosis() == null || medicalCase.getPresumptiveDiagnosis().equals("")) {
             medicalCase.setPresumptiveDiagnosis("Presumtive diagnosis returned by DL algorithm");
         }
         medicalCase.setDifficultyScore(1);
-        medicalCase.setInsertDate(new Date());
-        medicalCase.setAllocationDate(LocalDateTime.now());
+        medicalCase.setInsertDate(LocalDateTime.now(ZoneOffset.UTC));
+        medicalCase.setAllocationDate(LocalDateTime.now(ZoneOffset.UTC));
 
         return allocateCase(medicalCase);
     }
 
     public MedicalCase addDrawingToMedicalCase(UUID medicalCaseId, byte[] image) {
         Optional<MedicalCase> actualMedicalCaseOptional = medicalCaseRepository.findById(medicalCaseId);
-        if (!actualMedicalCaseOptional.isPresent()) {
+        if (actualMedicalCaseOptional.isEmpty()) {
             throw new ResourceNotFoundException(MedicalCase.class.getSimpleName() + " with id: " + medicalCaseId);
         }
         MedicalCase actualMedicalCase = actualMedicalCaseOptional.get();
@@ -92,13 +90,13 @@ public class MedicalCaseService {
         medicalCase.setResident(allocatedResident);
 
         LOGGER.info("Assigning resident {} to medical case with id {}", allocatedResident, medicalCase.getId());
-        return medicalCaseRepository.save(medicalCase);
+        return medicalCaseRepository.saveAndFlush(medicalCase);
     }
 
     public MedicalCase updateMedicalCase(MedicalCase medicalCase) {
         Optional<MedicalCase> actualMedicalCaseOptional = medicalCaseRepository.findById(medicalCase.getId());
 
-        if (!actualMedicalCaseOptional.isPresent()) {
+        if (actualMedicalCaseOptional.isEmpty()) {
             throw new ResourceNotFoundException(MedicalCase.class.getSimpleName() + " with id: " + medicalCase.getId());
         }
         MedicalCase actualMedicalCase = actualMedicalCaseOptional.get();
@@ -109,12 +107,15 @@ public class MedicalCaseService {
         if (medicalCase.getCFPImageCustomized() != actualMedicalCase.getCFPImageCustomized()) {
             medicalCase.setCFPImageCustomized(actualMedicalCase.getCFPImageCustomized());
         }
+        int maxPoints = medicalCase.getTherapeuticPlanGrades().size() + medicalCase.getDifferentialDiagnosisGrades().size() + medicalCase.getClinicalSignGrades().size();
+        medicalCase.setGrade(Math.round(medicalCase.getScore() * 1000 / maxPoints) / 100.0);
         Resident resident = actualMedicalCase.getResident();
-        if (medicalCase.isCompletedByExpert()){
-            List<MedicalCase> completeMedicalCases = resident.getMedicalCases().stream().filter(MedicalCase::isCompletedByExpert).collect(Collectors.toList());
-            double average = completeMedicalCases.stream().mapToDouble(MedicalCase::getGrade).sum();
+        if (medicalCase.isCompletedByExpert()) {
+            List<MedicalCase> completeMedicalCases = resident.getMedicalCases().stream().filter(MedicalCase::isCompletedByExpert).toList();
+            double sum = completeMedicalCases.stream().mapToDouble(MedicalCase::getGrade).sum() + medicalCase.getGrade();
 
-            resident.setGrade(average/completeMedicalCases.size());
+            resident.setGrade(Math.round((sum * 100) / (completeMedicalCases.size() + 1)) / 100.0);
+            residentRepository.save(resident);
         }
         medicalCase.setResident(resident);
         medicalCase.getClinicalSignGrades().forEach(clinicalSignGrade -> clinicalSignGrade.setMedicalCase(medicalCase));

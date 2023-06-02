@@ -6,5 +6,5 @@ import lombok.Data;
 @Data
 @Builder
 public class StringResponseDTO {
-    String message;
+    private String message;
 }

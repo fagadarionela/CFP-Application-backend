@@ -12,8 +12,13 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 public class Disease {
+
     @Id
     private String name;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "educational_topic", nullable = false)
+    private EducationalTopic educationalTopic;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "clinical_signs", nullable = false)
@@ -26,4 +31,6 @@ public class Disease {
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "therapeutic_plans", nullable = false)
     private List<TherapeuticPlan> therapeuticPlans;
+
+    private boolean retinalCondition;
 }

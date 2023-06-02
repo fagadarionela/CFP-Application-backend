@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -14,15 +13,14 @@ public class DiseaseService {
     private final DiseaseRepository diseaseRepository;
 
     private final ClinicalSignRepository clinicalSignRepository;
+
     private final DifferentialDiagnosisRepository differentialDiagnosisRepository;
 
     private final SignRepository signRepository;
 
-
     private final TherapeuticPlanRepository therapeuticPlanRepository;
 
     private final MethodRepository methodRepository;
-
 
     public Disease addDiagnosis(Disease disease) {
         if (diseaseRepository.findByName(disease.getName()) != null) {
@@ -34,13 +32,13 @@ public class DiseaseService {
             disease.getDifferentialDiagnosis().forEach(differentialDiagnosis ->
                     differentialDiagnosis.getDifferentialDiagnosisSign().forEach(
                             differentialDiagnosisDifferentialDiagnosisElement -> signRepository.save(differentialDiagnosisDifferentialDiagnosisElement.getSign())));
-            differentialDiagnosisRepository.saveAll(disease.getDifferentialDiagnosis());
+//            differentialDiagnosisRepository.saveAll(disease.getDifferentialDiagnosis());
         }
         if (disease.getTherapeuticPlans() != null && !disease.getTherapeuticPlans().isEmpty()) {
             disease.getTherapeuticPlans().forEach(therapeuticPlan ->
                     therapeuticPlan.getTherapeuticPlanMethod().forEach(
                             therapeuticPlanTherapeuticPlanElement -> methodRepository.save(therapeuticPlanTherapeuticPlanElement.getMethod())));
-            therapeuticPlanRepository.saveAll(disease.getTherapeuticPlans());
+//            therapeuticPlanRepository.saveAll(disease.getTherapeuticPlans());
         }
 
         return diseaseRepository.save(disease);
@@ -50,6 +48,11 @@ public class DiseaseService {
         return diseaseRepository.findAll();
     }
 
+    public List<Disease> getAllRetinalCases() {
+        return diseaseRepository.findAllByRetinalConditionIsTrue();
+    }
+
+
     public void deleteDiseaseByName(String name) {
         diseaseRepository.deleteByName(name);
     }
@@ -57,5 +60,4 @@ public class DiseaseService {
     public Disease getDiseaseByName(String name) {
         return diseaseRepository.findByName(name);
     }
-
 }

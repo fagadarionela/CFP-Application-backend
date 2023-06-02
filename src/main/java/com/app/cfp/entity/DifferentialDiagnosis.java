@@ -1,10 +1,7 @@
 package com.app.cfp.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -13,7 +10,9 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Builder
+@ToString(exclude = "differentialDiagnosisSign")
 public class DifferentialDiagnosis {
+
     @Id
     private String name;
 

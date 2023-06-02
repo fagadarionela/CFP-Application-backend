@@ -10,8 +10,10 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class SignService {
+
     private final SignRepository SignRepository;
-    public List<Sign> getAllSigns(){
+
+    public List<Sign> getAllSigns() {
         return SignRepository.findAll();
     }
 }

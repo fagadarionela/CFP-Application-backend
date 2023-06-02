@@ -1,18 +1,19 @@
 package com.app.cfp.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
 @Entity
 @Builder
+@AllArgsConstructor
+@EqualsAndHashCode
 public class TherapeuticPlanMethod {
 
     @EmbeddedId
-    TherapeuticPlanMethodKey id;
+    private TherapeuticPlanMethodKey id;
+//    = new TherapeuticPlanMethodKey(this.therapeuticPlan.getName(), this.method.getName());
 
     @ManyToOne
     @MapsId("therapeuticPlan")
@@ -23,10 +24,4 @@ public class TherapeuticPlanMethod {
     @MapsId("method")
     @JoinColumn(name = "method")
     private Method method;
-
-    public TherapeuticPlanMethod(TherapeuticPlanMethodKey id, TherapeuticPlan therapeuticPlan, Method method) {
-        this.id = new TherapeuticPlanMethodKey(therapeuticPlan.getName(), method.getName());
-        this.therapeuticPlan = therapeuticPlan;
-        this.method = method;
-    }
 }

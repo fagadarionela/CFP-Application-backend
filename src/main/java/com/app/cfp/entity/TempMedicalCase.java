@@ -1,31 +1,31 @@
 package com.app.cfp.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
-import java.io.File;
 import java.util.UUID;
 
 @Data
-@EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class EducationalMedicalCase {
+@Builder
+public class TempMedicalCase {
+
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     private UUID id;
 
-    private File CFPImage;
+    @Column(nullable = false, length = 100000)
+    private byte[] CFPImage;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "resident_id")
-    private Resident resident;
-
-    private boolean completed = false;
+    private String presumptiveDiagnosis;
 }

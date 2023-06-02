@@ -2,7 +2,6 @@ package com.app.cfp.config;
 
 import com.app.cfp.service.UserDetailsServiceImpl;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -33,5 +32,4 @@ public class CustomAuthenticationManager implements AuthenticationManager {
         }
         return new UsernamePasswordAuthenticationToken(userDetail.getUsername(), userDetail.getPassword(), userDetail.getAuthorities());
     }
-
 }

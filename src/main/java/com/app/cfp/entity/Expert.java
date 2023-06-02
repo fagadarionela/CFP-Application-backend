@@ -15,6 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 public class Expert {
+
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")

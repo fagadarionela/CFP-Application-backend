@@ -5,8 +5,11 @@ import org.springframework.http.HttpStatus;
 import java.util.Set;
 
 public class CustomException extends RuntimeException {
+
     private final String resource;
+
     private final HttpStatus status;
+
     private final Set<String> validationErrors;
 
     public CustomException(String message, HttpStatus status, String resource, Set<String> errors) {

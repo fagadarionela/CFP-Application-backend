@@ -11,4 +11,5 @@ public class ResidentDTO {
 
     private AccountDTO account;
 
+    private double grade;
 }

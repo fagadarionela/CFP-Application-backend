@@ -1,10 +1,7 @@
 package com.app.cfp.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -13,11 +10,12 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Entity
+@ToString(exclude = "differentialDiagnosisSign")
 public class Sign {
+
     @Id
     private String name;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE, mappedBy = "sign")
     private List<DifferentialDiagnosisSign> differentialDiagnosisSign;
-
 }

@@ -3,13 +3,13 @@ package com.app.cfp.dto;
 import lombok.Data;
 
 import java.util.List;
-import java.util.UUID;
 
 @Data
 public class DiseaseDTO {
 
     private String name;
 
+    private EducationalTopicDTO educationalTopic;
 
     private List<String> clinicalSigns;
 
@@ -18,4 +18,6 @@ public class DiseaseDTO {
 
 
     private List<TherapeuticPlanDTO> therapeuticPlans;
+
+    private boolean retinalCondition;
 }

@@ -9,11 +9,17 @@ import java.util.Date;
 @Data
 public class ExceptionHandlerResponseDTO {
     private Date timestamp;
+
     private int status;
+
     private String error;
+
     private String message;
+
     private String path;
+
     private String resource;
+
     private Collection<?> details;
 
     public ExceptionHandlerResponseDTO(String resource, String error, int status, String message, Collection<?> details, String path) {

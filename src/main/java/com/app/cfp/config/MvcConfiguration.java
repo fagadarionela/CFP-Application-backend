@@ -13,7 +13,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class MvcConfiguration implements WebMvcConfigurer {
 
     @Value("${server.port}")
-    private String  serverPort;
+    private String serverPort;
 
     @Bean
     public TomcatContextCustomizer sameSiteCookiesConfig() {

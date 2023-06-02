@@ -17,5 +17,4 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         httpServletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         httpServletResponse.getOutputStream().println("error: " + e.getMessage());
     }
-
 }

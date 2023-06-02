@@ -3,6 +3,7 @@ package com.app.cfp.dto;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -48,4 +49,10 @@ public class MedicalCaseFullDTO {
     private String correctDiagnosis;
 
     private boolean saved;
+
+    private LocalDateTime allocationDate;
+
+    private Double grade;
+
+    private LocalDateTime beginDate;
 }

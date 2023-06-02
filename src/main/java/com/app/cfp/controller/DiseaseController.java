@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -38,9 +37,9 @@ public class DiseaseController {
 
     @GetMapping()
     @PreAuthorize("hasAnyRole('ROLE_RESIDENT', 'ROLE_OPERATOR', 'ROLE_EXPERT')")
-    public ResponseEntity<Set<String>> getAllDiseases() {
-        Set<String> diseases = diseaseService.getAllDiseases().stream().map(Disease::getName).collect(Collectors.toSet());
-        return new ResponseEntity<>(diseases, HttpStatus.OK);
+    public ResponseEntity<List<DiseaseDTO>> getAllDiseases() {
+        List<Disease> diseases = diseaseService.getAllDiseases();
+        return new ResponseEntity<>(diseases.stream().map(diseaseMapper::toDto).collect(Collectors.toList()), HttpStatus.OK);
     }
 
     @GetMapping("/{name}")

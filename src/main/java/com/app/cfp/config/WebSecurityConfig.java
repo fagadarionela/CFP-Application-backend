@@ -27,8 +27,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedOrigins("http://localhost:4200", "https://cfp-application.herokuapp.com", "https://cfp-application.click"
-                , "https://cfp-application.azurewebsites.net")
+        registry.addMapping("/**").allowedOrigins("http://localhost:4200", "http://localhost:4201", "https://cfp-application.herokuapp.com", "https://cfp-application.click"
+                        , "https://cfp-application.azurewebsites.net")
                 .allowCredentials(true);
     }
 
@@ -74,7 +74,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.debug(true)
+        return (web) -> web.debug(false)
                 .ignoring()
                 .requestMatchers("/css/**", "/js/**", "/img/**", "/lib/**", "/favicon.ico");
     }

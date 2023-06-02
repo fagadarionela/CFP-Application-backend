@@ -1,8 +1,8 @@
 package com.app.cfp.controller;
 
-import com.app.cfp.dto.MethodDTO;
-import com.app.cfp.mapper.MethodMapper;
-import com.app.cfp.service.MethodService;
+import com.app.cfp.dto.EducationalTopicDTO;
+import com.app.cfp.mapper.EducationalTopicMapper;
+import com.app.cfp.service.EducationalTopicService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,18 +16,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(value = "/methods")
+@RequestMapping(value = "/educational-topic")
 @AllArgsConstructor
 @CrossOrigin
-public class MethodController {
+public class EducationalTopicController {
 
-    private final MethodService MethodService;
+    private final EducationalTopicService educationalTopicService;
 
-    private final MethodMapper MethodMapper;
+    private final EducationalTopicMapper educationalTopicMapper;
 
     @GetMapping()
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<List<MethodDTO>> getAllMethods() {
-        return new ResponseEntity<>(MethodService.getAllMethods().stream().map(MethodMapper::toDto).collect(Collectors.toList()), HttpStatus.OK);
+    public ResponseEntity<List<EducationalTopicDTO>> getAllClinicalSigns() {
+        return new ResponseEntity<>(educationalTopicService.getAllEducationalTopics().stream().map(educationalTopicMapper::toDto).collect(Collectors.toList()), HttpStatus.OK);
     }
 }

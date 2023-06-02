@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 @CrossOrigin
 public class ClinicalSignController {
 
-
     private final ClinicalSignService clinicalSignService;
 
     private final ClinicalSignMapper clinicalSignMapper;

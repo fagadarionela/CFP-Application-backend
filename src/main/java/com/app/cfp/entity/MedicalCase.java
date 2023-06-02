@@ -4,10 +4,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.hibernate.annotations.GenericGenerator;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 public class MedicalCase implements Comparable<MedicalCase> {
+
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
@@ -23,6 +25,7 @@ public class MedicalCase implements Comparable<MedicalCase> {
 
     private String encodedInfo;
 
+    @NotNull
     private LocalDateTime allocationDate;
 
     private String additionalInformation;
@@ -56,18 +59,22 @@ public class MedicalCase implements Comparable<MedicalCase> {
 
     private boolean saved;
 
-    private Date insertDate;
+    private LocalDateTime insertDate;
+
+    private LocalDateTime beginDate;
 
     private double score = 0;
 
     private double grade = 1;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "resident", nullable = false)
+    @JoinColumn(name = "resident")
     private Resident resident;
 
     @Override
-    public int compareTo(MedicalCase o) {
-        return this.getAllocationDate().compareTo(o.getAllocationDate());
+    public int compareTo(@NonNull MedicalCase o) {
+        return this.allocationDate == null ?
+                (o.allocationDate == null ? 0 : -1) :
+                (o.allocationDate == null ? 1 : this.allocationDate.compareTo(o.allocationDate));
     }
 }

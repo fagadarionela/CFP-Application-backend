@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 @Transactional
 public interface DifferentialDiagnosisRepository extends JpaRepository<DifferentialDiagnosis, UUID> {
+
 }

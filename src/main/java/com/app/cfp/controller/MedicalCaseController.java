@@ -6,7 +6,7 @@ import com.app.cfp.dto.StringResponseDTO;
 import com.app.cfp.entity.MedicalCase;
 import com.app.cfp.mapper.MedicalCasesCustomizedMapper;
 import com.app.cfp.mapper.MedicalCasesMapper;
-import com.app.cfp.service.DiseaseService;
+import com.app.cfp.service.AllocationService;
 import com.app.cfp.service.MedicalCaseService;
 import com.app.cfp.utils.ImageUtility;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,7 +39,8 @@ public class MedicalCaseController {
 
     private final MedicalCasesCustomizedMapper medicalCasesCustomizedMapper;
 
-    private final DiseaseService diseaseService;
+    private final AllocationService allocationService;
+
 
     @GetMapping("/assigned/incomplete")
     @PreAuthorize("hasRole('ROLE_RESIDENT')")
@@ -79,7 +80,7 @@ public class MedicalCaseController {
 
     @PostMapping()
     @PreAuthorize("hasRole('ROLE_OPERATOR')")
-    public ResponseEntity<StringResponseDTO> addMedicalCase(@RequestPart("image") MultipartFile image, @RequestPart("medicalCase") String medicalCaseJSON) throws IOException {
+    public ResponseEntity<MedicalCaseFullDTO> addMedicalCase(@RequestPart("image") MultipartFile image, @RequestPart("medicalCase") String medicalCaseJSON) throws IOException {
         System.out.println(image);
         ObjectMapper objectMapper = new ObjectMapper();
         MedicalCase medicalCase = objectMapper.readValue(medicalCaseJSON, MedicalCase.class);
@@ -87,7 +88,7 @@ public class MedicalCaseController {
 
         MedicalCase returnedMedicalCase = medicalCasesService.addMedicalCase(medicalCase);
 
-        return new ResponseEntity<>(StringResponseDTO.builder().message("The medical case with id " + returnedMedicalCase.getId() + " was added!").build(), HttpStatus.CREATED);
+        return new ResponseEntity<>(medicalCasesMapper.toDto(returnedMedicalCase), HttpStatus.CREATED);
     }
 
     @PostMapping("/drawing")
@@ -95,7 +96,7 @@ public class MedicalCaseController {
     public ResponseEntity<StringResponseDTO> addDrawing(@RequestPart("image") MultipartFile image, @RequestPart("id") String medicalCaseJSON) throws IOException {
         MedicalCase returnedMedicalCase = medicalCasesService.addDrawingToMedicalCase(UUID.fromString(medicalCaseJSON), ImageUtility.compressImage(image.getBytes()));
 
-        return new ResponseEntity<>(StringResponseDTO.builder().message("The medical case with id " + returnedMedicalCase.getId() + " was updated!").build(), HttpStatus.CREATED);
+        return new ResponseEntity<>(StringResponseDTO.builder().message("Cazul medical cu id-ul " + returnedMedicalCase.getId() + " a fost actualizat!").build(), HttpStatus.CREATED);
     }
 
     @PutMapping
@@ -103,5 +104,12 @@ public class MedicalCaseController {
     public ResponseEntity<MedicalCaseFullDTO> updateMedicalCase(@RequestBody MedicalCaseFullDTO medicalCaseDTO) {
         MedicalCase returnedMedicalCase = medicalCasesService.updateMedicalCase(medicalCasesMapper.toDomain(medicalCaseDTO));
         return new ResponseEntity<>(medicalCasesMapper.toDto(returnedMedicalCase), HttpStatus.OK);
+    }
+
+    @GetMapping("/assignEducationalCase")
+    @PreAuthorize("hasAnyRole('ROLE_OPERATOR')")
+    public ResponseEntity<StringResponseDTO> assignVirtualCase() {
+        allocationService.assignEducationalCases();
+        return new ResponseEntity<>(StringResponseDTO.builder().message("Successfully assign education case").build(), HttpStatus.OK);
     }
 }
