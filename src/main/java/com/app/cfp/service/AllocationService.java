@@ -37,6 +37,8 @@ public class AllocationService {
 
     private final Random random = new Random();
 
+    private final DateService dateService;
+
     public Resident allocateMedicalCase(MedicalCase medicalCase) {
         List<String> retinalCases = diseaseService.getAllRetinalCases().stream().map(Disease::getName).toList();
         //real case scenario
@@ -109,7 +111,7 @@ public class AllocationService {
 
             //if exists a resident that has the fewest cases that day, then assign case to him
             //Assign the case to the resident which has seen fewer cases overall that day and at the same time virtual case to each resident
-            List<Resident> residentsThatMeetCondition = residentThatHasTheFewestCases(residentService.getAllResidentsWithTheNumberOfCasesAllocatedIn(LocalDateTime.now(ZoneOffset.UTC)).entrySet());
+            List<Resident> residentsThatMeetCondition = residentThatHasTheFewestCases(residentService.getAllResidentsWithTheNumberOfCasesAllocatedIn(dateService.now()).entrySet());
             if (residentsThatMeetCondition.size() == 1) {
                 virtualCaseRepository.save(virtualCaseMapper.toVirtualCase(medicalCase));
                 System.out.println("Assigned resident due to the fact that there exists a resident that has the fewest cases that day");
@@ -131,9 +133,9 @@ public class AllocationService {
 
     @Scheduled(cron = "0 0 14 * * *", zone = "Europe/Istanbul")
     public void assignEducationalCases() {
-        List<Resident> residentsWithZeroCases = residentService.getAllResidentsWithTheNumberOfCasesAllocatedIn(LocalDateTime.now(ZoneOffset.UTC)).entrySet().stream().filter(residentLongEntry -> residentLongEntry.getValue() == 0).map(Map.Entry::getKey).toList();
+        List<Resident> residentsWithZeroCases = residentService.getAllResidentsWithTheNumberOfCasesAllocatedIn(dateService.now()).entrySet().stream().filter(residentLongEntry -> residentLongEntry.getValue() == 0).map(Map.Entry::getKey).toList();
         List<String> retinalCases = diseaseService.getAllRetinalCases().stream().map(Disease::getName).toList();
-        long now = LocalDateTime.now(ZoneOffset.UTC).toEpochSecond(ZoneOffset.UTC);
+        long now = dateService.now().toEpochSecond(ZoneOffset.UTC);
 
         for (Resident resident : residentsWithZeroCases) {
             Map<String, Long> retinalCasesWithNumber = new HashMap<>();
@@ -241,7 +243,7 @@ public class AllocationService {
 
         MedicalCase medicalCase = virtualCaseMapper.toMedicalCase(virtualCase);
         medicalCase.setResident(resident);
-        medicalCase.setAllocationDate(LocalDateTime.now(ZoneOffset.UTC));
+        medicalCase.setAllocationDate(dateService.now());
         medicalCaseRepository.save(medicalCase);
         LOGGER.info("Virtual case with diagnosis {} was assigned to {}", virtualCase.getPresumptiveDiagnosis(), resident.getAccount().getUsername());
     }
@@ -300,7 +302,7 @@ public class AllocationService {
     private Resident residentThatHasTheLongestTimeSinceEncounterTheDiagnosis(List<Resident> residents, String diagnosis) {
         List<Resident> residentsWithLongestTSinceEncounterDiagnosis = new ArrayList<>();
         long longestTime = 0;
-        long now = LocalDateTime.now(ZoneOffset.UTC).toEpochSecond(ZoneOffset.UTC);
+        long now = dateService.now().toEpochSecond(ZoneOffset.UTC);
 
         for (Resident resident : residents) {
             Optional<MedicalCase> medicalCaseOptional = resident.getMedicalCases()
