@@ -5,6 +5,7 @@ import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 import java.io.Serializable;
 
@@ -17,6 +18,6 @@ public class TherapeuticPlanMethodKey implements Serializable {
     @Column(name = "therapeutic_plan")
     String therapeuticPlan;
 
-    @Column(name = "method")
+    @Column(name = "method", length = 500)
     String method;
 }

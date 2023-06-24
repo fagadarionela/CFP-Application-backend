@@ -70,6 +70,7 @@ public class MedicalCaseService {
         medicalCase.setDifficultyScore(1);
         medicalCase.setInsertDate(LocalDateTime.now(ZoneOffset.UTC));
         medicalCase.setAllocationDate(LocalDateTime.now(ZoneOffset.UTC));
+        medicalCase.setResidentDiagnosis("Normal");
 
         return allocateCase(medicalCase);
     }
@@ -107,8 +108,20 @@ public class MedicalCaseService {
         if (medicalCase.getCFPImageCustomized() != actualMedicalCase.getCFPImageCustomized()) {
             medicalCase.setCFPImageCustomized(actualMedicalCase.getCFPImageCustomized());
         }
-        int maxPoints = medicalCase.getTherapeuticPlanGrades().size() + medicalCase.getDifferentialDiagnosisGrades().size() + medicalCase.getClinicalSignGrades().size();
-        medicalCase.setGrade(Math.round(medicalCase.getScore() * 1000 / maxPoints) / 100.0);
+        medicalCase.setCFPImageName(actualMedicalCase.getCFPImageName());
+//        int maxPoints = medicalCase.getTherapeuticPlanGrades().size() + medicalCase.getDifferentialDiagnosisGrades().size() + medicalCase.getClinicalSignGrades().size(); TODO
+        int maxPoints = medicalCase.getClinicalSignGrades().size();
+        if (maxPoints != 0) {
+            medicalCase.setGrade(Math.round(medicalCase.getScore() * 1000 / maxPoints) / 100.0);
+        }
+        else{
+            if (medicalCase.getCorrectDiagnosis()!= null && !medicalCase.getCorrectDiagnosis().equals(medicalCase.getResidentDiagnosis())){
+                medicalCase.setGrade(0);
+            }
+            else{
+                medicalCase.setGrade(10);
+            }
+        }
         Resident resident = actualMedicalCase.getResident();
         if (medicalCase.isCompletedByExpert()) {
             List<MedicalCase> completeMedicalCases = resident.getMedicalCases().stream().filter(MedicalCase::isCompletedByExpert).toList();

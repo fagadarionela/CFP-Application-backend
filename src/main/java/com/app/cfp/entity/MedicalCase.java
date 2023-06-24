@@ -28,12 +28,18 @@ public class MedicalCase implements Comparable<MedicalCase> {
     @NotNull
     private LocalDateTime allocationDate;
 
+    @Column(length = 1000)
     private String additionalInformation;
+
+    @Column(length = 1000)
+    private String feedback;
 
     private int difficultyScore;
 
     @Column(nullable = false, length = 100000)
     private byte[] CFPImage;
+
+    private String CFPImageName;
 
     @Column(length = 100000)
     private byte[] CFPImageCustomized;

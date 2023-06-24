@@ -79,4 +79,9 @@ public class ResidentController {
     public ResponseEntity<Long> getNumberOfMedicalCases(@PathVariable("username") String username, @PathVariable("diagnosis") String diagnosis) {
         return new ResponseEntity<>(residentService.getNumberOfMedicalCases(username, diagnosis), HttpStatus.OK);
     }
+    @GetMapping("/gradeOfMedicalCases/{username}/{diagnosis}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Double> getGradeOfMedicalCases(@PathVariable("username") String username, @PathVariable("diagnosis") String diagnosis) {
+        return new ResponseEntity<>(residentService.getGradeOfMedicalCases(username, diagnosis), HttpStatus.OK);
+    }
 }

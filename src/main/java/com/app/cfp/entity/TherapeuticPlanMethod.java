@@ -22,6 +22,6 @@ public class TherapeuticPlanMethod {
 
     @ManyToOne
     @MapsId("method")
-    @JoinColumn(name = "method")
+    @JoinColumn(name = "method", columnDefinition = "VARCHAR(500)")
     private Method method;
 }

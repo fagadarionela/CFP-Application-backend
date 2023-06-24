@@ -1,5 +1,6 @@
 package com.app.cfp.service;
 
+import com.app.cfp.entity.MedicalCase;
 import com.app.cfp.entity.Resident;
 import com.app.cfp.repository.ResidentRepository;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -83,5 +85,21 @@ public class ResidentService {
             return residentOptional.get().getMedicalCases().stream().filter(medicalCase -> medicalCase.getPresumptiveDiagnosis().equals(diagnosis)).count();
         }
         return 0L;
+    }
+
+    public double getGradeOfMedicalCases(String username, String diagnosis) {
+        Optional<Resident> residentOptional = residentRepository.findByAccount_Username(username);
+
+        if (residentOptional.isPresent()) {
+            List<MedicalCase> medicalCases = residentOptional.get().getMedicalCases().stream().filter(medicalCase -> medicalCase.getPresumptiveDiagnosis().equals(diagnosis)).collect(Collectors.toList());
+            int numberOfCases = medicalCases.size();
+            if (numberOfCases == 0) return 1L;
+            double gradeForDiagnosis = 0;
+            for(MedicalCase medicalCase: medicalCases){
+                gradeForDiagnosis += medicalCase.getGrade();
+            }
+            return Math.round(gradeForDiagnosis * 100 / numberOfCases) / 100.0;
+        }
+        return 1L;
     }
 }

@@ -31,32 +31,30 @@ public class SchedulerService {
         this.medicalCaseService = medicalCaseService;
     }
 
-    //TODO @Cronjob at 14:00:00
-    public void assignEducationalCases() {
-        //TODO
-        //if cases are not enough
-        //getAllEducationalCases
-        //allocateEducationalCaseToResident0
-    }
-
     @Scheduled(cron = "0 0 0 * * *", zone = "Europe/Istanbul")
     public void addTempMedicalCases() {
         List<TempMedicalCase> tempMedicalCaseList = systemService.getAllTempMedicalCases();
         for (int i = 0; i < numberOfCasesAutomaticallyAssignedPerDay; i++) {
+            if (tempMedicalCaseList.size() == 0){
+                return;
+            }
             int position = random.nextInt(tempMedicalCaseList.size());
             TempMedicalCase tempMedicalCase = tempMedicalCaseList.get(position);
-            medicalCaseService.addMedicalCase(createMedicalCase(tempMedicalCase.getCFPImage(), tempMedicalCase.getPresumptiveDiagnosis()));
+            medicalCaseService.addMedicalCase(createMedicalCase(tempMedicalCase.getCFPImage(), tempMedicalCase.getPresumptiveDiagnosis(), tempMedicalCase.getCFPImageName()));
             systemService.deleteTempMedicalCase(tempMedicalCase.getId());
             tempMedicalCaseList.remove(position);
         }
     }
 
-    private MedicalCase createMedicalCase(byte[] fileData, String presumtiveDiagnosis) {
+    private MedicalCase createMedicalCase(byte[] fileData, String presumtiveDiagnosis, String CFPImageName) {
         MedicalCase medicalCase = new MedicalCase();
-        medicalCase.setEncodedInfo("$2a$12$MDnofLJT8LrIILyh8SCle.DN9yKFRqQg8W.dqbq6hlkKqE0bL6mKK");
-        medicalCase.setAdditionalInformation("INFORMATII ADITIONALE!");
-        medicalCase.setCFPImage(ImageUtility.compressImage(fileData));
+        String randomName = java.util.UUID.randomUUID() + java.util.UUID.randomUUID().toString();
+
+        medicalCase.setEncodedInfo("$2a$12$" + randomName.substring(0, 52));
+        medicalCase.setAdditionalInformation("No additional information");
+        medicalCase.setCFPImage(fileData);
         medicalCase.setPresumptiveDiagnosis(presumtiveDiagnosis);
+        medicalCase.setCFPImageName(CFPImageName);
 
         return medicalCase;
     }

@@ -19,6 +19,8 @@ public class MedicalCaseFullDTO {
 
     private String additionalInformation;
 
+    private String feedback;
+
     private int difficultyScore;
 
     @NotNull
