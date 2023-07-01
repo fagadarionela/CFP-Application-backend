@@ -37,8 +37,6 @@ public class AllocationService {
 
     private final Random random = new Random();
 
-    private final DateService dateService;
-
     public Resident allocateMedicalCase(MedicalCase medicalCase) {
         List<String> retinalCases = diseaseService.getAllRetinalCases().stream().map(Disease::getName).toList();
         //real case scenario
@@ -111,7 +109,7 @@ public class AllocationService {
 
             //if exists a resident that has the fewest cases that day, then assign case to him
             //Assign the case to the resident which has seen fewer cases overall that day and at the same time virtual case to each resident
-            List<Resident> residentsThatMeetCondition = residentThatHasTheFewestCases(residentService.getAllResidentsWithTheNumberOfCasesAllocatedIn(dateService.now()).entrySet());
+            List<Resident> residentsThatMeetCondition = residentThatHasTheFewestCases(residentService.getAllResidentsWithTheNumberOfCasesAllocatedIn(LocalDateTime.now(ZoneOffset.UTC)).entrySet());
             if (residentsThatMeetCondition.size() == 1) {
                 virtualCaseRepository.save(virtualCaseMapper.toVirtualCase(medicalCase));
                 System.out.println("Assigned resident due to the fact that there exists a resident that has the fewest cases that day");
@@ -131,106 +129,106 @@ public class AllocationService {
         }
     }
 
-    @Scheduled(cron = "0 0 14 * * *", zone = "Europe/Istanbul")
-    public void assignEducationalCases() {
-        List<Resident> residentsWithZeroCases = residentService.getAllResidentsWithTheNumberOfCasesAllocatedIn(dateService.now()).entrySet().stream().filter(residentLongEntry -> residentLongEntry.getValue() == 0).map(Map.Entry::getKey).toList();
-        List<String> retinalCases = diseaseService.getAllRetinalCases().stream().map(Disease::getName).toList();
-        long now = dateService.now().toEpochSecond(ZoneOffset.UTC);
-
-        for (Resident resident : residentsWithZeroCases) {
-            Map<String, Long> retinalCasesWithNumber = new HashMap<>();
-            retinalCases.forEach(s -> retinalCasesWithNumber.put(s, 0L));
-
-            resident.getMedicalCases().forEach(
-                    medicalCase -> {
-                        String diagnosis = medicalCase.getPresumptiveDiagnosis();
-                        retinalCasesWithNumber.put(diagnosis, retinalCasesWithNumber.getOrDefault(diagnosis, 0L) + 1);
-                    }
-            );
-
-            long minimumNumberOfRetinalCases = Long.MAX_VALUE;
-            double lowestGrade = Double.MAX_VALUE;
-            long longestEncounterTime = 0;
-            List<String> fewestRetinalConditions = new ArrayList<>();
-            List<String> lowestGradeForRetinalConditions = new ArrayList<>();
-            List<String> longestEncounteredTForRetinalCondition = new ArrayList<>();
-            boolean hasSeenLessThanOneCaseFromEveryRetinalCondition = true;
-            boolean hasSeenLessThanThreeCasesFromEveryRetinalCondition = true;
-            boolean hasGradeLessThanSevenForEveryRetinalCondition = true;
-
-            for (Map.Entry<String, Long> retinalCaseWithNumber : retinalCasesWithNumber.entrySet()) {
-                long numberOfCases = retinalCaseWithNumber.getValue();
-                if (numberOfCases != 0) {
-                    hasSeenLessThanOneCaseFromEveryRetinalCondition = false;
-                }
-                if (numberOfCases >= 3) {
-                    hasSeenLessThanThreeCasesFromEveryRetinalCondition = false;
-                }
-                if (numberOfCases < minimumNumberOfRetinalCases) {
-                    minimumNumberOfRetinalCases = numberOfCases;
-                }
-                for (MedicalCase medicalCase : resident.getMedicalCases()) {
-                    double grade = medicalCase.getGrade();
-                    long encounteredTime = medicalCase.getAllocationDate().toEpochSecond(ZoneOffset.UTC);
-                    if (grade >= 7) {
-                        hasGradeLessThanSevenForEveryRetinalCondition = false;
-                    }
-                    if (grade < lowestGrade) {
-                        lowestGrade = grade;
-                    }
-                    if (now - encounteredTime > longestEncounterTime) {
-                        longestEncounterTime = now - encounteredTime;
-                    }
-                }
-            }
-
-            //if resident has seen <1 from every Retinal Condition then randomly assign a case
-            if (hasSeenLessThanOneCaseFromEveryRetinalCondition) {
-                //randomly assign a case between them
-                assignOneCaseFromVirtualCases(resident, virtualCaseRepository.findAll());
-            }
-
-            for (Map.Entry<String, Long> retinalCaseWithNumber : retinalCasesWithNumber.entrySet()) {
-                long numberOfCases = retinalCaseWithNumber.getValue();
-                if (numberOfCases == minimumNumberOfRetinalCases) {
-                    fewestRetinalConditions.add(retinalCaseWithNumber.getKey());
-                }
-            }
-            for (MedicalCase medicalCase : resident.getMedicalCases()) {
-                if (lowestGrade == medicalCase.getGrade()) {
-                    lowestGradeForRetinalConditions.add(medicalCase.getPresumptiveDiagnosis());
-                }
-                if (longestEncounterTime == now - medicalCase.getAllocationDate().toEpochSecond(ZoneOffset.UTC)) {
-                    longestEncounteredTForRetinalCondition.add(medicalCase.getPresumptiveDiagnosis());
-                }
-            }
-
-            //if resident has seen <3 from every Retinal Condition then if there is one RC seen the least, assign a case, else randomly assign the case
-            if (hasSeenLessThanThreeCasesFromEveryRetinalCondition) {
-                assignFewestRetinalConditionsToResident(fewestRetinalConditions, resident);
-            }
-
-            //if resident has grade <7 from every Retinal Condition then if there is one RC with the lowest grade, assign a case, else randomly assign the case
-            if (hasGradeLessThanSevenForEveryRetinalCondition) {
-                if (lowestGradeForRetinalConditions.size() == 1) {
-                    //assign case to the resident
-                    assignVirtualCaseToResident(lowestGradeForRetinalConditions.get(0), resident);
-                } else {
-                    //randomly assign a case between them
-                    assignVirtualCaseToResident(lowestGradeForRetinalConditions.get(random.nextInt(lowestGradeForRetinalConditions.size())), resident);
-                }
-            }
-
-            //if resident has seen <=1 Retinal Case with the longest encounter t, then assign a case
-            if (longestEncounteredTForRetinalCondition.size() == 1) {
-                //assign case to the resident
-                assignVirtualCaseToResident(longestEncounteredTForRetinalCondition.get(0), resident);
-            }
-
-            //if resident has seen <=1 Retinal Case with fewest seen cases, then assign a case, else randomly assign a case
-            assignFewestRetinalConditionsToResident(fewestRetinalConditions, resident);
-        }
-    }
+//    @Scheduled(cron = "0 0 14 * * *", zone = "Europe/Istanbul")
+//    public void assignEducationalCases() {
+//        List<Resident> residentsWithZeroCases = residentService.getAllResidentsWithTheNumberOfCasesAllocatedIn(LocalDateTime.now(ZoneOffset.UTC)).entrySet().stream().filter(residentLongEntry -> residentLongEntry.getValue() == 0).map(Map.Entry::getKey).toList();
+//        List<String> retinalCases = diseaseService.getAllRetinalCases().stream().map(Disease::getName).toList();
+//        long now = LocalDateTime.now(ZoneOffset.UTC).toEpochSecond(ZoneOffset.UTC);
+//
+//        for (Resident resident : residentsWithZeroCases) {
+//            Map<String, Long> retinalCasesWithNumber = new HashMap<>();
+//            retinalCases.forEach(s -> retinalCasesWithNumber.put(s, 0L));
+//
+//            resident.getMedicalCases().forEach(
+//                    medicalCase -> {
+//                        String diagnosis = medicalCase.getPresumptiveDiagnosis();
+//                        retinalCasesWithNumber.put(diagnosis, retinalCasesWithNumber.getOrDefault(diagnosis, 0L) + 1);
+//                    }
+//            );
+//
+//            long minimumNumberOfRetinalCases = Long.MAX_VALUE;
+//            double lowestGrade = Double.MAX_VALUE;
+//            long longestEncounterTime = 0;
+//            List<String> fewestRetinalConditions = new ArrayList<>();
+//            List<String> lowestGradeForRetinalConditions = new ArrayList<>();
+//            List<String> longestEncounteredTForRetinalCondition = new ArrayList<>();
+//            boolean hasSeenLessThanOneCaseFromEveryRetinalCondition = true;
+//            boolean hasSeenLessThanThreeCasesFromEveryRetinalCondition = true;
+//            boolean hasGradeLessThanSevenForEveryRetinalCondition = true;
+//
+//            for (Map.Entry<String, Long> retinalCaseWithNumber : retinalCasesWithNumber.entrySet()) {
+//                long numberOfCases = retinalCaseWithNumber.getValue();
+//                if (numberOfCases != 0) {
+//                    hasSeenLessThanOneCaseFromEveryRetinalCondition = false;
+//                }
+//                if (numberOfCases >= 3) {
+//                    hasSeenLessThanThreeCasesFromEveryRetinalCondition = false;
+//                }
+//                if (numberOfCases < minimumNumberOfRetinalCases) {
+//                    minimumNumberOfRetinalCases = numberOfCases;
+//                }
+//                for (MedicalCase medicalCase : resident.getMedicalCases()) {
+//                    double grade = medicalCase.getGrade();
+//                    long encounteredTime = medicalCase.getAllocationDate().toEpochSecond(ZoneOffset.UTC);
+//                    if (grade >= 7) {
+//                        hasGradeLessThanSevenForEveryRetinalCondition = false;
+//                    }
+//                    if (grade < lowestGrade) {
+//                        lowestGrade = grade;
+//                    }
+//                    if (now - encounteredTime > longestEncounterTime) {
+//                        longestEncounterTime = now - encounteredTime;
+//                    }
+//                }
+//            }
+//
+//            //if resident has seen <1 from every Retinal Condition then randomly assign a case
+//            if (hasSeenLessThanOneCaseFromEveryRetinalCondition) {
+//                //randomly assign a case between them
+//                assignOneCaseFromVirtualCases(resident, virtualCaseRepository.findAll());
+//            }
+//
+//            for (Map.Entry<String, Long> retinalCaseWithNumber : retinalCasesWithNumber.entrySet()) {
+//                long numberOfCases = retinalCaseWithNumber.getValue();
+//                if (numberOfCases == minimumNumberOfRetinalCases) {
+//                    fewestRetinalConditions.add(retinalCaseWithNumber.getKey());
+//                }
+//            }
+//            for (MedicalCase medicalCase : resident.getMedicalCases()) {
+//                if (lowestGrade == medicalCase.getGrade()) {
+//                    lowestGradeForRetinalConditions.add(medicalCase.getPresumptiveDiagnosis());
+//                }
+//                if (longestEncounterTime == now - medicalCase.getAllocationDate().toEpochSecond(ZoneOffset.UTC)) {
+//                    longestEncounteredTForRetinalCondition.add(medicalCase.getPresumptiveDiagnosis());
+//                }
+//            }
+//
+//            //if resident has seen <3 from every Retinal Condition then if there is one RC seen the least, assign a case, else randomly assign the case
+//            if (hasSeenLessThanThreeCasesFromEveryRetinalCondition) {
+//                assignFewestRetinalConditionsToResident(fewestRetinalConditions, resident);
+//            }
+//
+//            //if resident has grade <7 from every Retinal Condition then if there is one RC with the lowest grade, assign a case, else randomly assign the case
+//            if (hasGradeLessThanSevenForEveryRetinalCondition) {
+//                if (lowestGradeForRetinalConditions.size() == 1) {
+//                    //assign case to the resident
+//                    assignVirtualCaseToResident(lowestGradeForRetinalConditions.get(0), resident);
+//                } else {
+//                    //randomly assign a case between them
+//                    assignVirtualCaseToResident(lowestGradeForRetinalConditions.get(random.nextInt(lowestGradeForRetinalConditions.size())), resident);
+//                }
+//            }
+//
+//            //if resident has seen <=1 Retinal Case with the longest encounter t, then assign a case
+//            if (longestEncounteredTForRetinalCondition.size() == 1) {
+//                //assign case to the resident
+//                assignVirtualCaseToResident(longestEncounteredTForRetinalCondition.get(0), resident);
+//            }
+//
+//            //if resident has seen <=1 Retinal Case with fewest seen cases, then assign a case, else randomly assign a case
+//            assignFewestRetinalConditionsToResident(fewestRetinalConditions, resident);
+//        }
+//    }
 
     private void assignOneCaseFromVirtualCases(Resident resident, List<VirtualCase> virtualCases) {
         VirtualCase virtualCase;
@@ -243,7 +241,7 @@ public class AllocationService {
 
         MedicalCase medicalCase = virtualCaseMapper.toMedicalCase(virtualCase);
         medicalCase.setResident(resident);
-        medicalCase.setAllocationDate(dateService.now());
+        medicalCase.setAllocationDate(LocalDateTime.now(ZoneOffset.UTC));
         medicalCaseRepository.save(medicalCase);
         LOGGER.info("Virtual case with diagnosis {} was assigned to {}", virtualCase.getPresumptiveDiagnosis(), resident.getAccount().getUsername());
     }
@@ -302,7 +300,7 @@ public class AllocationService {
     private Resident residentThatHasTheLongestTimeSinceEncounterTheDiagnosis(List<Resident> residents, String diagnosis) {
         List<Resident> residentsWithLongestTSinceEncounterDiagnosis = new ArrayList<>();
         long longestTime = 0;
-        long now = dateService.now().toEpochSecond(ZoneOffset.UTC);
+        long now = LocalDateTime.now(ZoneOffset.UTC).toEpochSecond(ZoneOffset.UTC);
 
         for (Resident resident : residents) {
             Optional<MedicalCase> medicalCaseOptional = resident.getMedicalCases()

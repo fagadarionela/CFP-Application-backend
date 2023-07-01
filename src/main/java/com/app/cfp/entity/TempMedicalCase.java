@@ -27,5 +27,7 @@ public class TempMedicalCase {
     @Column(nullable = false, length = 100000)
     private byte[] CFPImage;
 
+    private String CFPImageName;
+
     private String presumptiveDiagnosis;
 }

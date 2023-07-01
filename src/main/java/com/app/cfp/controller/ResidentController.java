@@ -50,13 +50,13 @@ public class ResidentController {
 
     @GetMapping("/current")
     @PreAuthorize("hasRole('ROLE_RESIDENT')")
-    public ResponseEntity<ResidentDTO> getCurrentResident(Principal principal) {
-        Optional<Resident> resident = residentService.getResidentByUsername(principal.getName());
-        if (resident.isEmpty()) {
+    public ResponseEntity<Double> getGradeOfResident(Principal principal) {
+        Double grade = residentService.getResidentGradeByUsername(principal.getName());
+        if (grade == null) {
             throw new ResourceNotFoundException("Residentul nu a putut fi gasit!");
         }
 
-        return new ResponseEntity<>(residentMapper.toDto(resident.get()), HttpStatus.OK);
+        return new ResponseEntity<>(grade, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -78,5 +78,10 @@ public class ResidentController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Long> getNumberOfMedicalCases(@PathVariable("username") String username, @PathVariable("diagnosis") String diagnosis) {
         return new ResponseEntity<>(residentService.getNumberOfMedicalCases(username, diagnosis), HttpStatus.OK);
+    }
+    @GetMapping("/gradeOfMedicalCases/{username}/{diagnosis}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Double> getGradeOfMedicalCases(@PathVariable("username") String username, @PathVariable("diagnosis") String diagnosis) {
+        return new ResponseEntity<>(residentService.getGradeOfMedicalCases(username, diagnosis), HttpStatus.OK);
     }
 }

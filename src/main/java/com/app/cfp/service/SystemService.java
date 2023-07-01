@@ -5,7 +5,6 @@ import com.app.cfp.repository.TempMedicalCaseRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -14,8 +13,8 @@ public class SystemService {
 
     private final TempMedicalCaseRepository tempMedicalCaseRepository;
 
-    public List<TempMedicalCase> getAllTempMedicalCases() {
-        return tempMedicalCaseRepository.findAll();
+    public TempMedicalCase findRandomTempMedicalCase() {
+        return tempMedicalCaseRepository.findRandomTempMedicalCase();
     }
 
     public TempMedicalCase addTempMedicalCase(TempMedicalCase tempMedicalCase) {
@@ -25,4 +24,10 @@ public class SystemService {
     public void deleteTempMedicalCase(UUID id) {
         tempMedicalCaseRepository.deleteById(id);
     }
+
+    public void deleteAllTempMedicalCases() {
+        tempMedicalCaseRepository.deleteAll();
+    }
+
+    public long countAllTempMedicalCases(){return tempMedicalCaseRepository.count();}
 }
