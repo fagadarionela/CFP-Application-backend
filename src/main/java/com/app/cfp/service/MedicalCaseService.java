@@ -90,7 +90,7 @@ public class MedicalCaseService {
         Resident allocatedResident = allocationService.allocateMedicalCase(medicalCase);
         medicalCase.setResident(allocatedResident);
 
-        LOGGER.info("Assigning resident {} to medical case with id {}", allocatedResident, medicalCase.getId());
+        LOGGER.info("Assigning resident {} to medical case with diagnosis {}", allocatedResident, medicalCase.getPresumptiveDiagnosis());
         return medicalCaseRepository.saveAndFlush(medicalCase);
     }
 

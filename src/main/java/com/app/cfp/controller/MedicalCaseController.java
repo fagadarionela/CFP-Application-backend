@@ -101,15 +101,15 @@ public class MedicalCaseController {
 
     @PutMapping
     @PreAuthorize("hasAnyRole('ROLE_RESIDENT', 'ROLE_EXPERT')")
-    public ResponseEntity<MedicalCaseFullDTO> updateMedicalCase(@RequestBody MedicalCaseFullDTO medicalCaseDTO) {
+    public ResponseEntity<StringResponseDTO> updateMedicalCase(@RequestBody MedicalCaseFullDTO medicalCaseDTO) {
         MedicalCase returnedMedicalCase = medicalCasesService.updateMedicalCase(medicalCasesMapper.toDomain(medicalCaseDTO));
-        return new ResponseEntity<>(medicalCasesMapper.toDto(returnedMedicalCase), HttpStatus.OK);
+        return new ResponseEntity<>(StringResponseDTO.builder().message("Cazul medical cu id-ul " + returnedMedicalCase.getId() + " a fost actualizat!").build(), HttpStatus.CREATED);
     }
 
-    @GetMapping("/assignEducationalCase")
-    @PreAuthorize("hasAnyRole('ROLE_OPERATOR')")
-    public ResponseEntity<StringResponseDTO> assignVirtualCase() {
-        allocationService.assignEducationalCases();
-        return new ResponseEntity<>(StringResponseDTO.builder().message("Successfully assign education case").build(), HttpStatus.OK);
-    }
+//    @GetMapping("/assignEducationalCase")
+//    @PreAuthorize("hasAnyRole('ROLE_OPERATOR')")
+//    public ResponseEntity<StringResponseDTO> assignVirtualCase() {
+//        allocationService.assignEducationalCases();
+//        return new ResponseEntity<>(StringResponseDTO.builder().message("Successfully assign education case").build(), HttpStatus.OK);
+//    }
 }

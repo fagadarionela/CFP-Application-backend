@@ -23,8 +23,16 @@ public class ResidentService {
         return residentRepository.findAll();
     }
 
+    public long countAllResidents() {
+        return residentRepository.count();
+    }
+
     public Optional<Resident> getResidentByUsername(String username) {
         return residentRepository.findByAccount_Username(username);
+    }
+
+    public Double getResidentGradeByUsername(String username) {
+        return residentRepository.findGradeByAccount_Username(username);
     }
 
     public Map<Resident, Long> getAllResidentsWithTheNumberOfCasesAllocatedIn(LocalDateTime today) {
