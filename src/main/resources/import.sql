@@ -1,15 +1,15 @@
 INSERT INTO account VALUES ('expert1', '$2a$10$IgXwqVXXpYhxsGcb1jT8duVIQL.RKFRRHIHqr5EzHriRfNYt2PuZu', 'EXPERT');
-INSERT INTO account VALUES ('resident1', '$2a$10$qjfU8lvv3GX9uEpv3Oy5Fu4ZwlN3gZBA8OsHWEQ22olNNaXeDK9kS', 'RESIDENT');
-INSERT INTO account VALUES ('resident2', '$2a$10$iXizUJn0eknoZBwGDYxQQeYmj2yXZG.3fb/pJzh9R3d.bp2Jzl5EG', 'RESIDENT');
-INSERT INTO account VALUES ('resident3', '$2a$10$wmZJ9KF9qb/qYAD1x3SL.OxjxoCYMY2OdxcMLP0daHyA2q.FAJM4u', 'RESIDENT');
-INSERT INTO account VALUES ('resident4', '$2a$10$Fmnl1AkXyR8VPZ3PIZvqiO18LID3elKaKwlvqTeuxj8qpEUsmn.4y', 'RESIDENT');
+-- INSERT INTO account VALUES ('resident1', '$2a$10$qjfU8lvv3GX9uEpv3Oy5Fu4ZwlN3gZBA8OsHWEQ22olNNaXeDK9kS', 'RESIDENT');
+-- INSERT INTO account VALUES ('resident2', '$2a$10$iXizUJn0eknoZBwGDYxQQeYmj2yXZG.3fb/pJzh9R3d.bp2Jzl5EG', 'RESIDENT');
+-- INSERT INTO account VALUES ('resident3', '$2a$10$wmZJ9KF9qb/qYAD1x3SL.OxjxoCYMY2OdxcMLP0daHyA2q.FAJM4u', 'RESIDENT');
+-- INSERT INTO account VALUES ('resident4', '$2a$10$Fmnl1AkXyR8VPZ3PIZvqiO18LID3elKaKwlvqTeuxj8qpEUsmn.4y', 'RESIDENT');
 INSERT INTO account VALUES ('operator1', '$2a$10$IgXwqVXXpYhxsGcb1jT8duVIQL.RKFRRHIHqr5EzHriRfNYt2PuZu', 'OPERATOR');
 INSERT INTO account VALUES ('admin1', '$2a$10$IgXwqVXXpYhxsGcb1jT8duVIQL.RKFRRHIHqr5EzHriRfNYt2PuZu', 'ADMIN');
 
-INSERT INTO resident(id,username, grade) VALUES ('b8aa2410-c5ae-11ed-afa1-0242ac120001', 'resident1', 1.00);
-INSERT INTO resident(id,username, grade) VALUES ('b8aa2410-c5ae-11ed-afa1-0242ac120002', 'resident2', 1.00);
-INSERT INTO resident(id,username, grade) VALUES ('b8aa2410-c5ae-11ed-afa1-0242ac120003', 'resident3', 1.00);
-INSERT INTO resident(id,username, grade) VALUES ('b8aa2410-c5ae-11ed-afa1-0242ac120004', 'resident4', 1.00);
+-- INSERT INTO resident(id,username, grade) VALUES ('b8aa2410-c5ae-11ed-afa1-0242ac120001', 'resident1', 1.00);
+-- INSERT INTO resident(id,username, grade) VALUES ('b8aa2410-c5ae-11ed-afa1-0242ac120002', 'resident2', 1.00);
+-- INSERT INTO resident(id,username, grade) VALUES ('b8aa2410-c5ae-11ed-afa1-0242ac120003', 'resident3', 1.00);
+-- INSERT INTO resident(id,username, grade) VALUES ('b8aa2410-c5ae-11ed-afa1-0242ac120004', 'resident4', 1.00);
 
 INSERT INTO educational_topic VALUES('Normal');
 INSERT INTO educational_topic VALUES('Macular conditions');

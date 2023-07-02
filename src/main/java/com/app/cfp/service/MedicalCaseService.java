@@ -37,6 +37,8 @@ public class MedicalCaseService {
 
     private final ResidentRepository residentRepository;
 
+    private final DateService dateService;
+
     public Page<MedicalCase> getAllIncompleteCasesForResident(String username, Pageable pageable, String encodedInfo) {
         return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedByResidentFalseAndEncodedInfoContainsOrderByAllocationDateDesc(username, pageable, encodedInfo);
     }
@@ -68,8 +70,8 @@ public class MedicalCaseService {
             medicalCase.setPresumptiveDiagnosis("Presumtive diagnosis returned by DL algorithm");
         }
         medicalCase.setDifficultyScore(1);
-        medicalCase.setInsertDate(LocalDateTime.now(ZoneOffset.UTC));
-        medicalCase.setAllocationDate(LocalDateTime.now(ZoneOffset.UTC));
+        medicalCase.setInsertDate(dateService.now());
+        medicalCase.setAllocationDate(dateService.now());
         medicalCase.setResidentDiagnosis("Normal");
 
         return allocateCase(medicalCase);

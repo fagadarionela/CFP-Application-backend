@@ -57,4 +57,8 @@ public class MedicalCaseFullDTO {
     private Double grade;
 
     private LocalDateTime beginDate;
+
+    private String assigningReason = "";
+
+    private String status = "";
 }

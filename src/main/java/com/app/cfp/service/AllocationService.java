@@ -37,6 +37,8 @@ public class AllocationService {
 
     private final Random random = new Random();
 
+    private final DateService dateService;
+
     public Resident allocateMedicalCase(MedicalCase medicalCase) {
         List<String> retinalCases = diseaseService.getAllRetinalCases().stream().map(Disease::getName).toList();
         //real case scenario
@@ -52,6 +54,12 @@ public class AllocationService {
             Resident resident = residentThatHasNotSeenOneCase(residentsWithNumberOfCases);
             if (resident != null) {
                 System.out.println("Assigned resident due to the fact that not every resident has seen 1 case");
+                medicalCase.setAssigningReason("Diagnosis contained in the 19 RCs - Assigned to " + resident.getAccount().getUsername() +" due to the fact that not every resident has seen 1 case from " + medicalCase.getPresumptiveDiagnosis());
+                StringBuilder status = new StringBuilder();
+                for(Map.Entry<Resident, Long> residentLongEntry: residentsWithNumberOfCases){
+                    status.append(residentLongEntry.getKey().getAccount().getUsername()).append(" - ").append(residentLongEntry.getValue()).append(" cazuri ");
+                }
+                medicalCase.setStatus(status.toString());
                 return resident;
             }
 
@@ -60,6 +68,12 @@ public class AllocationService {
             resident = residentThatHasNotSeenThreeCases(residentsWithNumberOfCases);
             if (resident != null) {
                 System.out.println("Assigned resident due to the fact that not every resident has seen 3 cases");
+                medicalCase.setAssigningReason("Diagnosis contained in the 19 RCs - Assigned to " + resident.getAccount().getUsername() +" due to the fact that not every resident has seen 3 cases from " + medicalCase.getPresumptiveDiagnosis());
+                StringBuilder status = new StringBuilder();
+                for(Map.Entry<Resident, Long> residentLongEntry: residentsWithNumberOfCases){
+                    status.append(residentLongEntry.getKey().getAccount().getUsername()).append(" - ").append(residentLongEntry.getValue()).append(" cazuri ");
+                }
+                medicalCase.setStatus(status.toString());
                 return resident;
             }
 
@@ -68,6 +82,7 @@ public class AllocationService {
             resident = residentThatHasGradeLessThanSeven(residents, medicalCase.getPresumptiveDiagnosis());
             if (resident != null) {
                 System.out.println("Assigned resident due to the fact that not every resident has grade >=7");
+                medicalCase.setAssigningReason("Diagnosis contained in the 19 RCs - Assigned to " + resident.getAccount().getUsername() +" due to the fact that not every resident has grade >=7 for diagnosis " + medicalCase.getPresumptiveDiagnosis());
                 return resident;
             }
 
@@ -76,6 +91,7 @@ public class AllocationService {
             resident = residentThatHasTheLongestTimeSinceEncounterTheDiagnosis(residents, medicalCase.getPresumptiveDiagnosis());
             if (resident != null) {
                 System.out.println("Assigned resident due to the fact that there exists a resident that has the longest t since encounter the diagnosis");
+                medicalCase.setAssigningReason("Diagnosis contained in the 19 RCs - Assigned to " + resident.getAccount().getUsername() +" due to the fact that there exists a resident that has the longest t since encounter the diagnosis " + medicalCase.getPresumptiveDiagnosis());
                 return resident;
             }
 
@@ -84,6 +100,7 @@ public class AllocationService {
             resident = residentThatHasTheFewestCasesFromEducationalTopic(residents, medicalCase.getPresumptiveDiagnosis());
             if (resident != null) {
                 System.out.println("Assigned resident due to the fact that there exists a resident that has the fewest cases from Educational Topic");
+                medicalCase.setAssigningReason("Diagnosis contained in the 19 RCs - Assigned to " + resident.getAccount().getUsername() +" due to the fact that there exists a resident that has the fewest cases from Educational Topic of the diagnosis " + medicalCase.getPresumptiveDiagnosis());
                 return resident;
             }
 
@@ -92,6 +109,7 @@ public class AllocationService {
             resident = residentThatHasTheFewestCasesFromRetinalCondition(residents, medicalCase.getPresumptiveDiagnosis());
             if (resident != null) {
                 System.out.println("Assigned resident due to the fact that there exists a resident that has the fewest cases from Retinal Condition");
+                medicalCase.setAssigningReason("Diagnosis contained in the 19 RCs - Assigned to " + resident.getAccount().getUsername() +" due to the fact that there exists a resident that has the fewest cases from Retinal Condition " + medicalCase.getPresumptiveDiagnosis());
                 return resident;
             }
 
@@ -100,19 +118,27 @@ public class AllocationService {
             List<Resident> residentsThatMeetCondition = residentThatHasTheFewestCases(residentsWithNumberOfCases);
             if (residentsThatMeetCondition.size() == 1) {
                 System.out.println("Assigned resident due to the fact that there exists a resident that has the fewest cases from all Retinal Conditions");
+                medicalCase.setAssigningReason("Diagnosis contained in the 19 RCs - Assigned to " + residentsThatMeetCondition.get(0) +" due to the fact that there exists a resident that has the fewest cases from all Retinal Conditions. The diagnosis of the medical case is " + medicalCase.getPresumptiveDiagnosis());
+                StringBuilder status = new StringBuilder();
+                for(Map.Entry<Resident, Long> residentLongEntry: residentsWithNumberOfCases){
+                    status.append(residentLongEntry.getKey().getAccount().getUsername()).append(" - ").append(residentLongEntry.getValue()).append(" cazuri ");
+                }
+                medicalCase.setStatus(status.toString());
                 return residentsThatMeetCondition.get(0);
             }
             System.out.println("Randomly assigned resident");
+            medicalCase.setAssigningReason("Diagnosis contained in the 19 RCs - Randomly assigned. The diagnosis of the medical case is \" + medicalCase.getPresumptiveDiagnosis()");
             return residentsThatMeetCondition.get(random.nextInt(residentsThatMeetCondition.size()));
         } else {
             // Diagnosis not contained in the 19 RCs
 
             //if exists a resident that has the fewest cases that day, then assign case to him
             //Assign the case to the resident which has seen fewer cases overall that day and at the same time virtual case to each resident
-            List<Resident> residentsThatMeetCondition = residentThatHasTheFewestCases(residentService.getAllResidentsWithTheNumberOfCasesAllocatedIn(LocalDateTime.now(ZoneOffset.UTC)).entrySet());
+            List<Resident> residentsThatMeetCondition = residentThatHasTheFewestCases(residentService.getAllResidentsWithTheNumberOfCasesAllocatedIn(dateService.now()).entrySet());
             if (residentsThatMeetCondition.size() == 1) {
                 virtualCaseRepository.save(virtualCaseMapper.toVirtualCase(medicalCase));
                 System.out.println("Assigned resident due to the fact that there exists a resident that has the fewest cases that day");
+                medicalCase.setAssigningReason("Diagnosis not contained in the 19 RCs - Assigned to " + residentsThatMeetCondition.get(0).getAccount().getUsername() +" due to the fact that there exists a resident that has the fewest cases that day " + medicalCase.getPresumptiveDiagnosis());
                 return residentsThatMeetCondition.get(0);
             }
 
@@ -123,8 +149,10 @@ public class AllocationService {
             residentsThatMeetCondition = residentThatHasTheFewestCases(residentService.getAllResidentsWithTheNumberOfCases().entrySet());
             if (residentsThatMeetCondition.size() == 1) {
                 System.out.println("Assigned resident due to the fact that there exists a resident that has the fewest cases from all Retinal Conditions");
+                medicalCase.setAssigningReason("Diagnosis not contained in the 19 RCs - Assigned to " + residentsThatMeetCondition.get(0).getAccount().getUsername()+" due to the fact that there exists a resident that has the fewest cases from all Retinal Conditions " + medicalCase.getPresumptiveDiagnosis());
                 return residentsThatMeetCondition.get(0);
             }
+            medicalCase.setAssigningReason("Diagnosis not contained in the 19 RCs - Randomly assigned resident - "+residentsThatMeetCondition.get(0).getAccount().getUsername());
             return residentsThatMeetCondition.get(random.nextInt(residentsThatMeetCondition.size()));
         }
     }
@@ -241,7 +269,7 @@ public class AllocationService {
 
         MedicalCase medicalCase = virtualCaseMapper.toMedicalCase(virtualCase);
         medicalCase.setResident(resident);
-        medicalCase.setAllocationDate(LocalDateTime.now(ZoneOffset.UTC));
+        medicalCase.setAllocationDate(dateService.now());
         medicalCaseRepository.save(medicalCase);
         LOGGER.info("Virtual case with diagnosis {} was assigned to {}", virtualCase.getPresumptiveDiagnosis(), resident.getAccount().getUsername());
     }
@@ -300,7 +328,7 @@ public class AllocationService {
     private Resident residentThatHasTheLongestTimeSinceEncounterTheDiagnosis(List<Resident> residents, String diagnosis) {
         List<Resident> residentsWithLongestTSinceEncounterDiagnosis = new ArrayList<>();
         long longestTime = 0;
-        long now = LocalDateTime.now(ZoneOffset.UTC).toEpochSecond(ZoneOffset.UTC);
+        long now = dateService.now().toEpochSecond(ZoneOffset.UTC);
 
         for (Resident resident : residents) {
             Optional<MedicalCase> medicalCaseOptional = resident.getMedicalCases()

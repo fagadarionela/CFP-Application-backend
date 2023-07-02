@@ -74,6 +74,12 @@ public class MedicalCase implements Comparable<MedicalCase> {
 
     private double grade = 1;
 
+    @Column(length = 1000)
+    private String assigningReason = "";
+
+    @Column(length = 1000)
+    private String status = "";
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "resident")
     private Resident resident;
