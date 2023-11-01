@@ -22,6 +22,10 @@ public class MedicalCasePartialInformationDTO {
     @NotNull
     private byte[] CFPImage;
 
+    private String CFPImageName;
+
+    private boolean automaticCase;
+
     private String presumptiveDiagnosis;
 
     private String residentDiagnosis;

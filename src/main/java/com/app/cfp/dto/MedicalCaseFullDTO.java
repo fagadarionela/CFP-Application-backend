@@ -26,9 +26,13 @@ public class MedicalCaseFullDTO {
     @NotNull
     private byte[] CFPImage;
 
+    private String CFPImageName;
+
+    private boolean automaticCase;
+
     private byte[] CFPImageCustomized;
 
-    private String presumptiveDiagnosis;
+    private String CFPImageCustomizedName;
 
     private String residentDiagnosis;
 
@@ -57,4 +61,6 @@ public class MedicalCaseFullDTO {
     private Double grade;
 
     private LocalDateTime beginDate;
+
+    private String presumptiveDiagnosis;
 }

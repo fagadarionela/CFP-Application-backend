@@ -4,13 +4,19 @@ import com.app.cfp.controller.handlers.exceptions.model.ResourceNotFoundExceptio
 import com.app.cfp.entity.MedicalCase;
 import com.app.cfp.entity.Resident;
 import com.app.cfp.repository.*;
+import com.app.cfp.utils.UploadClient;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -37,9 +43,16 @@ public class MedicalCaseService {
 
     private final ResidentRepository residentRepository;
 
+    private final UploadClient uploadClient;
+
     public Page<MedicalCase> getAllIncompleteCasesForResident(String username, Pageable pageable, String encodedInfo) {
         return medicalCaseRepository.findAllByResident_Account_UsernameAndCompletedByResidentFalseAndEncodedInfoContainsOrderByAllocationDateDesc(username, pageable, encodedInfo);
     }
+
+    public Optional<MedicalCase> getMedicalCaseById(UUID id) {
+        return medicalCaseRepository.findById(id);
+    }
+
 
     public List<MedicalCase> getAllCasesForResident(String username) {
         return medicalCaseRepository.findAllByResident_Account_UsernameOrderByInsertDateDesc(username);
@@ -71,18 +84,49 @@ public class MedicalCaseService {
         medicalCase.setInsertDate(LocalDateTime.now(ZoneOffset.UTC));
         medicalCase.setAllocationDate(LocalDateTime.now(ZoneOffset.UTC));
         medicalCase.setResidentDiagnosis("Normal");
+        medicalCase.setCFPImageCustomizedName(null);
 
         return allocateCase(medicalCase);
     }
 
-    public MedicalCase addDrawingToMedicalCase(UUID medicalCaseId, byte[] image) {
+    public MedicalCase addMedicalCase(MultipartFile multipartFile, MedicalCase medicalCase) throws IOException {
+        //Send medicalCase to DL algorithm
+        //Set presumptive diagnosis and difficulty score
+        if (medicalCase.getPresumptiveDiagnosis() == null || medicalCase.getPresumptiveDiagnosis().equals("")) {
+            medicalCase.setPresumptiveDiagnosis("Presumtive diagnosis returned by DL algorithm");
+        }
+
+        medicalCase.setDifficultyScore(1);
+        medicalCase.setInsertDate(LocalDateTime.now(ZoneOffset.UTC));
+        medicalCase.setAllocationDate(LocalDateTime.now(ZoneOffset.UTC));
+        medicalCase.setResidentDiagnosis("Normal");
+
+        if (multipartFile != null && multipartFile.getBytes().length != 0) {
+            String fileName = uploadClient.generateImageName(multipartFile.getOriginalFilename(), System.currentTimeMillis() + "");
+            uploadImage(multipartFile, fileName);
+
+            medicalCase.setCFPImageName(fileName);
+        }
+
+        medicalCase.setCFPImageCustomizedName(null);
+
+        return allocateCase(medicalCase);
+    }
+
+    public MedicalCase addDrawingToMedicalCase(UUID medicalCaseId, MultipartFile multipartFile) {
         Optional<MedicalCase> actualMedicalCaseOptional = medicalCaseRepository.findById(medicalCaseId);
         if (actualMedicalCaseOptional.isEmpty()) {
             throw new ResourceNotFoundException(MedicalCase.class.getSimpleName() + " with id: " + medicalCaseId);
         }
         MedicalCase actualMedicalCase = actualMedicalCaseOptional.get();
 
-        actualMedicalCase.setCFPImageCustomized(image);
+//        actualMedicalCase.setCFPImageCustomized(image);
+
+        String fileName = actualMedicalCase.getCFPImageCustomizedName() != null ? actualMedicalCase.getCFPImageCustomizedName() : uploadClient.generateImageName(actualMedicalCase.getCFPImageName(), System.currentTimeMillis() + "_" + actualMedicalCase.getResident().getId() + "_customized");
+
+        uploadImage(multipartFile, fileName);
+
+        actualMedicalCase.setCFPImageCustomizedName(fileName);
         return medicalCaseRepository.save(actualMedicalCase);
     }
 
@@ -102,23 +146,21 @@ public class MedicalCaseService {
         }
         MedicalCase actualMedicalCase = actualMedicalCaseOptional.get();
 
-        if (medicalCase.getCFPImage() != actualMedicalCase.getCFPImage()) {
-            medicalCase.setCFPImage(actualMedicalCase.getCFPImage());
-        }
-        if (medicalCase.getCFPImageCustomized() != actualMedicalCase.getCFPImageCustomized()) {
-            medicalCase.setCFPImageCustomized(actualMedicalCase.getCFPImageCustomized());
-        }
+//        if (medicalCase.getCFPImage() != actualMedicalCase.getCFPImage()) {
+//            medicalCase.setCFPImage(actualMedicalCase.getCFPImage());
+//        }
+//        if (medicalCase.getCFPImageCustomized() != actualMedicalCase.getCFPImageCustomized()) {
+//            medicalCase.setCFPImageCustomized(actualMedicalCase.getCFPImageCustomized());
+//        }
         medicalCase.setCFPImageName(actualMedicalCase.getCFPImageName());
 //        int maxPoints = medicalCase.getTherapeuticPlanGrades().size() + medicalCase.getDifferentialDiagnosisGrades().size() + medicalCase.getClinicalSignGrades().size(); TODO
-        int maxPoints = medicalCase.getClinicalSignGrades().size();
+        int maxPoints = medicalCase.isAutomaticCase() ? medicalCase.getClinicalSignGrades().size() : medicalCase.getTherapeuticPlanGrades().size() + medicalCase.getDifferentialDiagnosisGrades().size() + medicalCase.getClinicalSignGrades().size();
         if (maxPoints != 0) {
             medicalCase.setGrade(Math.round(medicalCase.getScore() * 1000 / maxPoints) / 100.0);
-        }
-        else{
-            if (medicalCase.getCorrectDiagnosis()!= null && !medicalCase.getCorrectDiagnosis().equals(medicalCase.getResidentDiagnosis())){
+        } else {
+            if (medicalCase.getCorrectDiagnosis() != null && !medicalCase.getCorrectDiagnosis().equals(medicalCase.getResidentDiagnosis())) {
                 medicalCase.setGrade(0);
-            }
-            else{
+            } else {
                 medicalCase.setGrade(10);
             }
         }
@@ -146,5 +188,22 @@ public class MedicalCaseService {
 
         therapeuticPlanGradeRepository.saveAll(medicalCase.getTherapeuticPlanGrades());
         return medicalCaseRepository.save(medicalCase);
+    }
+
+    private String uploadImage(MultipartFile multipartFile, String fileName) {
+
+        File file = new File(fileName);
+
+        try (OutputStream os = new FileOutputStream(file)) {
+            os.write(multipartFile.getBytes());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        uploadClient.uploadFile(file);
+
+        file.delete();
+
+        return fileName;
     }
 }

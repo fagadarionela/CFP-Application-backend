@@ -28,6 +28,7 @@ public class UserController {
 
     @RequestMapping(value = "/login")
     public Principal login(Principal principal) {
+        System.out.println("Userul " + principal.getName() + " s-a conectat");
         return principal;
     }
 

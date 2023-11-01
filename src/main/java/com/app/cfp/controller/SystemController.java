@@ -1,10 +1,12 @@
 package com.app.cfp.controller;
 
 import com.app.cfp.dto.ImageDTO;
+import com.app.cfp.entity.MedicalCase;
 import com.app.cfp.entity.TempMedicalCase;
+import com.app.cfp.entity.VirtualCase;
 import com.app.cfp.service.MedicalCaseService;
 import com.app.cfp.service.SystemService;
-import com.app.cfp.utils.ImageUtility;
+import com.app.cfp.utils.UploadClient;
 import lombok.AllArgsConstructor;
 import org.imgscalr.Scalr;
 import org.slf4j.Logger;
@@ -17,11 +19,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/system")
@@ -36,6 +36,9 @@ public class SystemController {
 
     @Autowired
     MedicalCaseService medicalCaseService;
+
+    @Autowired
+    UploadClient uploadClient;
 
     @GetMapping("/file")
     @PreAuthorize("hasRole('ROLE_OPERATOR')")
@@ -92,37 +95,58 @@ public class SystemController {
 //        }
 
 
-        String mainDirectory = "src/main/resources/images";
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(mainDirectory))) {
-            for (Path path : stream) {
-                if (Files.isDirectory(path)) {
-                    try (DirectoryStream<Path> subStream = Files.newDirectoryStream(Paths.get(path.toString()))) {
-                        for (Path subPath : subStream) {
-                            if (!Files.isDirectory(subPath)) {
-                                File file = new File(subPath.toString());
-                                try (FileInputStream imageInFile = new FileInputStream(file)) {
-                                    // Reading a file from file system
-//                                    byte[] fileData = new byte[(int) file.length()];
-//                                    imageInFile.read(fileData);
-                                    byte[] fileData =resize(file);
-                                    //add case into tempMedicalCaseRepo
-                                    systemService.addTempMedicalCase(TempMedicalCase.builder().CFPImage(ImageUtility.compressImage(fileData)).presumptiveDiagnosis(path.toString().substring(path.toString().lastIndexOf('\\') + 1)).CFPImageName(subPath.toString().substring(subPath.toString().lastIndexOf('\\') + 1)).build());
-                                } catch (FileNotFoundException e) {
-                                    System.out.println("File not found" + e);
-                                } catch (IOException ioe) {
-                                    System.out.println("Exception while reading the file " + ioe);
-                                }
-                            }
-                        }
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+//        String mainDirectory = "https://cfp-images.s3.eu-central-1.amazonaws.com/images";
+//        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(mainDirectory))) {
+//            for (Path path : stream) {
+//                if (Files.isDirectory(path)) {
+//                    try (DirectoryStream<Path> subStream = Files.newDirectoryStream(Paths.get(path.toString()))) {
+//                        for (Path subPath : subStream) {
+//                            if (!Files.isDirectory(subPath)) {
+//                                File file = new File(subPath.toString());
+//                                try (FileInputStream imageInFile = new FileInputStream(file)) {
+//                                    // Reading a file from file system
+////                                    byte[] fileData = new byte[(int) file.length()];
+////                                    imageInFile.read(fileData);
+////                                    byte[] fileData =resize(file); // TODO
+//                                    uploadClient.uploadFile(file);
+//                                    //add case into tempMedicalCaseRepo
+//                                    systemService.addTempMedicalCase(TempMedicalCase.builder().presumptiveDiagnosis(path.toString().substring(path.toString().lastIndexOf('\\') + 1)).CFPImageName(subPath.toString().substring(subPath.toString().lastIndexOf('\\') + 1)).build());
+//                                } catch (FileNotFoundException e) {
+//                                    System.out.println("File not found" + e);
+//                                } catch (IOException ioe) {
+//                                    System.out.println("Exception while reading the file " + ioe);
+//                                }
+//                            }
+//                        }
+//                    } catch (IOException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+
+        List<String> objects = uploadClient.listObjects();
+        for(String object: objects){
+//            systemService.addTempMedicalCase(TempMedicalCase.builder().presumptiveDiagnosis(object.substring(object.indexOf('/')+1, object.lastIndexOf('/'))).CFPImageName(object.substring(object.lastIndexOf('/') + 1)).build());
+            systemService.addVirtualCase(createVirtualCase(object.substring(object.indexOf('/')+1, object.lastIndexOf('/')), object.substring(object.lastIndexOf('/') + 1)));
         }
+
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    VirtualCase createVirtualCase(String presumtiveDiagnosis, String CFPImageName){
+        VirtualCase virtualCase = new VirtualCase();
+        String randomName = java.util.UUID.randomUUID() + java.util.UUID.randomUUID().toString();
+
+        virtualCase.setEncodedInfo("$2a$12$" + randomName.substring(0, 52));
+        virtualCase.setAdditionalInformation("No additional information");
+        virtualCase.setAutomaticCase(true);
+        virtualCase.setPresumptiveDiagnosis(presumtiveDiagnosis);
+        virtualCase.setCFPImageName(CFPImageName);
+
+        return virtualCase;
     }
 
     public static byte[] resize(File icon) {

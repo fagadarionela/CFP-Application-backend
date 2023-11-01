@@ -37,13 +37,19 @@ public class MedicalCase implements Comparable<MedicalCase> {
 
     private int difficultyScore;
 
-    @Column(nullable = false, length = 100000)
+    @Column(nullable = true, length = 100000)
     private byte[] CFPImage;
 
     private String CFPImageName;
 
+    @Column(name = "automatic_case")
+    private boolean automaticCase;
+
     @Column(length = 100000)
     private byte[] CFPImageCustomized;
+
+    @Column(name = "cfpimage_customized_name")
+    private String CFPImageCustomizedName;
 
     private String presumptiveDiagnosis;
 

@@ -24,7 +24,7 @@ public class TempMedicalCase {
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     private UUID id;
 
-    @Column(nullable = false, length = 100000)
+    @Column(length = 100000)
     private byte[] CFPImage;
 
     private String CFPImageName;

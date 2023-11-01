@@ -14,5 +14,11 @@ public class MedicalCaseCustomizedDTO {
     @NotNull
     private byte[] CFPImage;
 
+    private String CFPImageName;
+
+    private String presumptiveDiagnosis;
+
+    private boolean automaticCase;
+
     private Date insertDate;
 }

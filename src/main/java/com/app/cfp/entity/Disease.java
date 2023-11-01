@@ -17,7 +17,7 @@ public class Disease {
     private String name;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "educational_topic", nullable = false)
+    @JoinColumn(name = "educational_topic")
     private EducationalTopic educationalTopic;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)

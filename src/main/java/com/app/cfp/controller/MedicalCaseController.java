@@ -8,7 +8,6 @@ import com.app.cfp.mapper.MedicalCasesCustomizedMapper;
 import com.app.cfp.mapper.MedicalCasesMapper;
 import com.app.cfp.service.AllocationService;
 import com.app.cfp.service.MedicalCaseService;
-import com.app.cfp.utils.ImageUtility;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -84,9 +83,10 @@ public class MedicalCaseController {
         System.out.println(image);
         ObjectMapper objectMapper = new ObjectMapper();
         MedicalCase medicalCase = objectMapper.readValue(medicalCaseJSON, MedicalCase.class);
-        medicalCase.setCFPImage(ImageUtility.compressImage(image.getBytes()));
 
-        MedicalCase returnedMedicalCase = medicalCasesService.addMedicalCase(medicalCase);
+//        medicalCase.setCFPImage(ImageUtility.compressImage(image.getBytes()));
+
+        MedicalCase returnedMedicalCase = medicalCasesService.addMedicalCase(image, medicalCase);
 
         return new ResponseEntity<>(medicalCasesMapper.toDto(returnedMedicalCase), HttpStatus.CREATED);
     }
@@ -94,9 +94,9 @@ public class MedicalCaseController {
     @PostMapping("/drawing")
     @PreAuthorize("hasAnyRole('ROLE_RESIDENT', 'ROLE_EXPERT')")
     public ResponseEntity<StringResponseDTO> addDrawing(@RequestPart("image") MultipartFile image, @RequestPart("id") String medicalCaseJSON) throws IOException {
-        MedicalCase returnedMedicalCase = medicalCasesService.addDrawingToMedicalCase(UUID.fromString(medicalCaseJSON), ImageUtility.compressImage(image.getBytes()));
+        MedicalCase returnedMedicalCase = medicalCasesService.addDrawingToMedicalCase(UUID.fromString(medicalCaseJSON), image);
 
-        return new ResponseEntity<>(StringResponseDTO.builder().message("Cazul medical cu id-ul " + returnedMedicalCase.getId() + " a fost actualizat!").build(), HttpStatus.CREATED);
+        return new ResponseEntity<>(StringResponseDTO.builder().message(returnedMedicalCase.getCFPImageCustomizedName()).build(), HttpStatus.CREATED);
     }
 
     @PutMapping
