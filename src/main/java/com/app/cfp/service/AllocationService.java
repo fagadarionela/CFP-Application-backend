@@ -39,10 +39,24 @@ public class AllocationService {
 
     public Resident allocateMedicalCase(MedicalCase medicalCase) {
 //        change done due to request
-//        List<Resident> residentsWithZeroCases = residentService.getAllResidentsWithTheNumberOfCasesAllocatedIn(LocalDateTime.now(ZoneOffset.UTC)).entrySet().stream().filter(residentLongEntry -> residentLongEntry.getValue() == 0).map(Map.Entry::getKey).toList();
-//        if (!residentsWithZeroCases.isEmpty()){
-//            return residentsWithZeroCases.get(random.nextInt(residentsWithZeroCases.size()));
-//        }
+        List<Resident> residentsWithZeroCases = residentService.getAllResidentsWithTheNumberOfCasesAllocatedIn(LocalDateTime.now(ZoneOffset.UTC)).entrySet().stream().filter(residentLongEntry -> residentLongEntry.getValue() == 0).map(Map.Entry::getKey).toList();
+        if (!residentsWithZeroCases.isEmpty()){
+            Map<Resident, Long> residentsWithNumberOfCases = residentService.getAllResidentsWithTheNumberOfCases();
+            long minNumberOfCases = Long.MAX_VALUE;
+            for (Resident resident: residentsWithZeroCases){
+                Long numberOfCases = residentsWithNumberOfCases.get(resident);
+                if (numberOfCases < minNumberOfCases){
+                    minNumberOfCases = numberOfCases;
+                }
+            }
+            List<Resident> residents = new ArrayList<>();
+            for (Resident resident: residentsWithZeroCases) {
+                if (residentsWithNumberOfCases.get(resident) == minNumberOfCases){
+                    residents.add(resident);
+                }
+            }
+            return residents.get(random.nextInt(residents.size()));
+        }
         List<String> retinalCases = diseaseService.getAllRetinalCases().stream().map(Disease::getName).toList();
         //real case scenario
         if (retinalCases.contains(medicalCase.getPresumptiveDiagnosis())) {

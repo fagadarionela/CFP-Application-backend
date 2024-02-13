@@ -41,7 +41,7 @@ public class SystemController {
     UploadClient uploadClient;
 
     @GetMapping("/file")
-    @PreAuthorize("hasRole('ROLE_OPERATOR')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ImageDTO> getFiles() {
 //        final String pathh = "images";
 //        final File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
@@ -169,13 +169,14 @@ public class SystemController {
 
     @GetMapping("/file/number")
     public ResponseEntity<Integer> getNumberOfFiles() {
-        return new ResponseEntity<>((int) systemService.countAllTempMedicalCases(), HttpStatus.OK);
+        return new ResponseEntity<>((int) systemService.countAllVirtualCases(), HttpStatus.OK);
     }
 
     @DeleteMapping("/file")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Integer> deleteTempFiles() {
         LOGGER.info("Deleting files...");
-        systemService.deleteAllTempMedicalCases();
+        systemService.deleteAllVirtualCases();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
